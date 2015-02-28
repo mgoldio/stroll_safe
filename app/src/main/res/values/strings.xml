@@ -11,4 +11,8 @@
     <string name="title_activity_thumb_released">ThumbReleasedActivity</string>
     <string name="title_activity_locked">LockedActivity</string>
     <string name="title_activity_shake_mode">ShakeModeActivity</string>
+
+    <string name="wrong_passcode">Wrong passcode, please try again.</string>
+
+    <string name="title_activity_set_lock">SetLockActivity</string>
 </resources>
