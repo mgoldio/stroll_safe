@@ -3,4 +3,12 @@
 
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_release_mode">ReleaseModeActivity</string>
+    <string name="title_activity_thumb_released">ThumbReleasedActivity</string>
+    <string name="title_activity_locked">LockedActivity</string>
+    <string name="title_activity_shake_mode">ShakeModeActivity</string>
 </resources>
