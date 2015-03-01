@@ -11,7 +11,9 @@
       android:baselineAligned="false"
       android:layout_alignParentTop="true"
       android:layout_alignParentLeft="true"
-      android:layout_alignParentStart="true">
+      android:layout_alignParentStart="true"
+      android:id="@+id/lockView"
+      >
 
 
     <include layout="@layout/pass_display"></include>
@@ -59,13 +61,27 @@
             android:text="15:06"
             android:id="@+id/timerText"
             android:layout_gravity="center_horizontal" />
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/progressHolder">
+          <ProgressBar
             android:id="@+id/progressBar2"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:indeterminate="false"
+            android:progress="75"
+            android:max="100"
+            android:secondaryProgress="100"
+            android:progressDrawable="@drawable/circular"/>
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceSmall"
+              android:text="Hold circle to call immediately"
+              android:layout_gravity="center_horizontal" />
 
         <Space
             android:layout_width="match_parent"
