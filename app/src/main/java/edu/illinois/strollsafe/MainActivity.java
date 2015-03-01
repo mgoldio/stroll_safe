@@ -3,6 +3,7 @@ package edu.illinois.strollsafe;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -27,6 +28,8 @@ import edu.illinois.strollsafe.util.OhShitLock;
 
 public class MainActivity extends Activity {
     public static final String PREFS_NAME = "StrollSafePrefs";
+    private static short pauseNeedsMainSwitchCounter = -1;
+    private static long lastShakeSend = 0;
 
     enum Mode {
         MAIN, RELEASE, SHAKE, THUMB
@@ -37,18 +40,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         // debug
-       /* SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.remove("key");
-        editor.commit();*/
+        // SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        // SharedPreferences.Editor editor = settings.edit();
+        //editor.remove("key");
+        //editor.commit();
 
         if(!OhShitLock.getInstance().restorePass(this)) {
+            pauseNeedsMainSwitchCounter = 0;
             Intent intent = new Intent(this, SetLockActivity.class);
             startActivity(intent);
         }
-        setContentView(R.layout.activity_main);
 
         // DEBUG DO NOT UNCOMMENT
         // EmergencyContacter.makeEmergencyCall(this);
@@ -261,8 +265,9 @@ public class MainActivity extends Activity {
                 prevVector[1] = event.values[1];
                 prevVector[2] = event.values[2];
                 float deltaDir = (x * x + y * y + z * z);
-                if(deltaDir < 375 && speed > 600)
+                if(deltaDir < 400 && speed > 550 && (System.currentTimeMillis() - lastShakeSend) > 5000)
                 {
+                    lastShakeSend = System.currentTimeMillis();
                     startActivity(new Intent(getApplicationContext(), LockedActivity.class));
                     changeMode(Mode.MAIN);
                 }
@@ -287,20 +292,40 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop(){
-        changeMode(Mode.SHAKE);
+        if(pauseNeedsMainSwitchCounter >= 0)
+        {
+            changeMode(Mode.MAIN);
+            pauseNeedsMainSwitchCounter++;
+        }
+        else {
+            changeMode(Mode.SHAKE);
+        }
+
+        if(pauseNeedsMainSwitchCounter >= 2)
+            pauseNeedsMainSwitchCounter = -1;
+
         super.onStop();
     }
 
     @Override
     protected void onPause(){
-        changeMode(Mode.SHAKE);
+        if(pauseNeedsMainSwitchCounter >= 0)
+        {
+            changeMode(Mode.MAIN);
+            pauseNeedsMainSwitchCounter++;
+        }
+        else {
+            changeMode(Mode.SHAKE);
+        }
+
+        if(pauseNeedsMainSwitchCounter >= 2)
+            pauseNeedsMainSwitchCounter = -1;
+
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        System.out.println(mode);
-        // TODO kill service
         if(OhShitLock.getInstance().isLocked())
             EmergencyContacter.makeEmergencyCall(this);
         super.onDestroy();

@@ -30,12 +30,6 @@
             android:screenOrientation="portrait" >
         </activity>
 
-        <service
-            android:name=".util.FusedLocationService"
-            android:enabled="true"
-            android:exported="true" >
-        </service>
-
         <activity
             android:name=".SetLockActivity"
             android:label="@string/title_activity_set_lock" >
