@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Enter Passcode"
+        android:text="Enter Passcode:"
         android:id="@+id/headerText"
         android:layout_gravity="center_horizontal" />
 

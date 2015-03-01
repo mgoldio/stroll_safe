@@ -1,6 +1,7 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -17,6 +18,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import edu.illinois.strollsafe.util.OhShitLock;
@@ -43,8 +46,11 @@ public class SetLockActivity extends PassKeyboard {
         pinCodeField4.setText("");
         pinCodeField1.requestFocus();
 
+        TextView headerText = (TextView)findViewById(R.id.headerText);
+
         if (pass0 == null) { // This is the first password
             pass0 = pass;
+            headerText.setText("Re-enter Passcode:");
             return;
         } else {
             if (pass0.equals(pass)) { // Confirm password
@@ -63,6 +69,8 @@ public class SetLockActivity extends PassKeyboard {
                 };
                 runOnUiThread(shake);
             }
+
+            headerText.setText("Enter Passcode:");
         }
 
         return;

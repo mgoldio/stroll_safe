@@ -2,6 +2,7 @@ package edu.illinois.strollsafe;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -40,10 +41,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // debug
-       /* SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.remove("key");
-        editor.commit();*/
+        editor.commit();
 
         if(!OhShitLock.getInstance().restorePass(this)){
             Intent intent = new Intent(this, SetLockActivity.class);
