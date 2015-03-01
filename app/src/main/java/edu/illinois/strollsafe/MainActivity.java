@@ -21,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
 
+import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.OhShitLock;
 
 import static edu.illinois.strollsafe.util.SendSMS.sendSMS;
@@ -45,14 +46,15 @@ public class MainActivity extends Activity {
         editor.remove("key");
         editor.commit();*/
 
-        if(!OhShitLock.getInstance().restorePass(this)){
+        if(!OhShitLock.getInstance().restorePass(this)) {
             Intent intent = new Intent(this, SetLockActivity.class);
             startActivity(intent);
         }
         setContentView(R.layout.activity_main);
 
-        sendSMS(this);
-
+        // DEBUG DO NOT UNCOMMENT
+        // EmergencyContacter.makeEmergencyCall(this);
+        
         MyListener listener = new MyListener();
         SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
@@ -295,6 +297,15 @@ public class MainActivity extends Activity {
     protected void onPause(){
         changeMode(Mode.SHAKE);
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        System.out.println(mode);
+        // TODO kill service
+        if(OhShitLock.getInstance().isLocked())
+            EmergencyContacter.makeEmergencyCall(this);
+        super.onDestroy();
     }
 
 }

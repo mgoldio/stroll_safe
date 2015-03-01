@@ -11,30 +11,18 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.Spanned;
-import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import edu.illinois.strollsafe.util.BackgroundService;
+import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.OhShitLock;
 import edu.illinois.strollsafe.util.PassKeyboard;
-
-import static edu.illinois.strollsafe.util.SendSMS.sendSMS;
 
 public class LockedActivity extends PassKeyboard {
     private static final long LOCK_TIME = 20;
@@ -69,6 +57,8 @@ public class LockedActivity extends PassKeyboard {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_locked);
         initialize();
+
+        OhShitLock.getInstance().setLocked(true);
 
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(200);
@@ -122,6 +112,7 @@ public class LockedActivity extends PassKeyboard {
                     }
                 }
 
+                EmergencyContacter.makeEmergencyCall(lockView.getContext());
                 unbindService(conn);
                 finish();
             }
@@ -152,7 +143,11 @@ public class LockedActivity extends PassKeyboard {
                 pinCodeField3.getText().toString() + pinCodeField4.getText();
 
         if( OhShitLock.getInstance().checkPass(pass) ) {
+<<<<<<< HEAD
             unbindService(conn);
+=======
+            OhShitLock.getInstance().setLocked(false);
+>>>>>>> 408bc7398dea233dc4584aa5f2b4602604ae423a
             finish();
         } else {
             Thread shake = new Thread() {
@@ -183,7 +178,7 @@ public class LockedActivity extends PassKeyboard {
     protected void onResume(){
         super.onResume();
         if ( time >= ((LOCK_TIME-1)*1000000000L)){
-            sendSMS(this);
+          EmergencyContacter.makeEmergencyCall(lockView.getContext());
         }
     }
 }
