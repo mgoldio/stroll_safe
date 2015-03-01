@@ -24,8 +24,6 @@ import android.widget.TextView;
 import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.OhShitLock;
 
-import static edu.illinois.strollsafe.util.SendSMS.sendSMS;
-
 
 public class MainActivity extends Activity {
     public static final String PREFS_NAME = "StrollSafePrefs";

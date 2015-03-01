@@ -15,8 +15,6 @@ import edu.illinois.strollsafe.MainActivity;
 import edu.illinois.strollsafe.R;
 import edu.illinois.strollsafe.SetLockActivity;
 
-import static edu.illinois.strollsafe.util.SendSMS.sendSMS;
-
 
 public class BackgroundService extends Service {
     private boolean quit;

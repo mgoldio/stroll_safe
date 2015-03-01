@@ -111,9 +111,8 @@ public class LockedActivity extends PassKeyboard {
                         e.printStackTrace();
                     }
                 }
-
-                EmergencyContacter.makeEmergencyCall(lockView.getContext());
                 unbindService(conn);
+                EmergencyContacter.makeEmergencyCall(LockedActivity.this);
                 finish();
             }
         }).start();
@@ -126,12 +125,13 @@ public class LockedActivity extends PassKeyboard {
         public boolean onTouch(View v, MotionEvent event) {
             if (event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_DOWN)
                 return false;
-
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                binder.setAccelerated(false);
-                binder.setAccelerator(0);
-            } else {
-                binder.setAccelerated(true);
+            if(binder !=null ) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    binder.setAccelerated(false);
+                    binder.setAccelerator(0);
+                } else {
+                    binder.setAccelerated(true);
+                }
             }
             return true;
         }
@@ -143,11 +143,12 @@ public class LockedActivity extends PassKeyboard {
                 pinCodeField3.getText().toString() + pinCodeField4.getText();
 
         if( OhShitLock.getInstance().checkPass(pass) ) {
-<<<<<<< HEAD
-            unbindService(conn);
-=======
+            try {
+                unbindService(conn);
+            } catch (Exception e){
+
+            }
             OhShitLock.getInstance().setLocked(false);
->>>>>>> 408bc7398dea233dc4584aa5f2b4602604ae423a
             finish();
         } else {
             Thread shake = new Thread() {
@@ -178,7 +179,28 @@ public class LockedActivity extends PassKeyboard {
     protected void onResume(){
         super.onResume();
         if ( time >= ((LOCK_TIME-1)*1000000000L)){
-          EmergencyContacter.makeEmergencyCall(lockView.getContext());
+            try{
+                unbindService(conn);
+            }catch (Exception e){
+
+            }
+
+            System.out.println("RESUME CALL");
+          EmergencyContacter.makeEmergencyCall(this);
+          time = 0;
+            finish();
+        }
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+
+        OhShitLock.getInstance().setLocked(false);
+        try{
+           unbindService(conn);
+        }catch (Exception e){
+
         }
     }
 }

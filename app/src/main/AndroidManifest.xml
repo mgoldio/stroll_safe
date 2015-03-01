@@ -26,7 +26,8 @@
         </activity>
         <activity
             android:name=".LockedActivity"
-            android:label="@string/title_activity_locked" >
+            android:label="@string/title_activity_locked"
+            android:screenOrientation="portrait" >
         </activity>
 
         <service
