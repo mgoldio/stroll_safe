@@ -86,7 +86,6 @@ public class LockedActivity extends PassKeyboard {
         startService(intent);
         bindService(intent , conn , Service.BIND_AUTO_CREATE);
 
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -120,7 +119,6 @@ public class LockedActivity extends PassKeyboard {
                 finish();
             }
         }).start();
-        progressBar.setProgress(0);
 
         progressBar.setOnTouchListener(new SpeedyTouchListener());
     }
