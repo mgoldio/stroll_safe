@@ -1,6 +1,7 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,6 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
+
+import edu.illinois.strollsafe.util.LockedActivity;
 
 
 public class MainActivity extends Activity {
@@ -53,6 +56,38 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void HandleThumbReleased() {
+        final View mainView = findViewById(R.id.mainLayout);
+        final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
+        final TextView timerText = (TextView)findViewById(R.id.timerText);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long durationNanos = 2000000000L; // two seconds
+                long startTime = System.nanoTime();
+                while(System.nanoTime() <= (startTime + durationNanos)) {
+                    final long elapsed = System.nanoTime() - startTime;
+                    final int percent = (int)(((double)elapsed / durationNanos) * 100);
+                    final double remaining = (double)elapsed / 1000000000L;
+                    mainView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressBar.setProgress(percent);
+                            timerText.setText(String.format("%.02f seconds remaining", 2d - remaining));
+                        }
+                    });
+                    try {
+                        Thread.sleep(50, 0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(mode == Mode.THUMB)
+                    startActivity(new Intent(getApplicationContext(), LockedActivity.class));
+            }
+        }).start();
     }
 
     private void changeMode(Mode newMode) {
@@ -116,6 +151,7 @@ public class MainActivity extends Activity {
                 // TODO: change mainButton image to fingerprint
                 bottomText.setVisibility(View.INVISIBLE);
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
+                HandleThumbReleased();
                 break;
         }
     }
