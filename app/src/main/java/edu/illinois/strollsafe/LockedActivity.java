@@ -1,10 +1,15 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Vibrator;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -25,16 +30,35 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import edu.illinois.strollsafe.util.BackgroundService;
 import edu.illinois.strollsafe.util.OhShitLock;
 import edu.illinois.strollsafe.util.PassKeyboard;
 
 public class LockedActivity extends PassKeyboard {
     private static final long LOCK_TIME = 20;
     private static final long SLEEP_TIME = 20;
-    private static int accelerator = 0;
-    private static long lastTime;
-    private static long accumulated;
-    private static boolean accelerated = false;
+
+    private BackgroundService.MyBinder binder;
+
+    // define a ServiceConnection object
+    private ServiceConnection conn = new ServiceConnection()
+    {
+        // then the Activity connected with the Service, this will be called
+        @Override
+        public void onServiceConnected(ComponentName name
+                , IBinder service)
+        {
+            System.out.println("--Service Connected--");
+            // achieve MyBinder instance
+            binder = (BackgroundService.MyBinder) service;
+        }
+        // then the connection break off
+        @Override
+        public void onServiceDisconnected(ComponentName name)
+        {
+            System.out.println("--Service Disconnected--");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,25 +75,33 @@ public class LockedActivity extends PassKeyboard {
         progressBar.setIndeterminate(false);
         progressBar.setMax(100);
         progressBar.setProgress(20);
+        Intent intent = null;
+        // Connect to our count-y service thingamabob
+        try{
+            intent = new Intent(this, Class.forName(BackgroundService.class.getName()));
+        }
+        catch (ClassNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+        startService(intent);
+        bindService(intent , conn , Service.BIND_AUTO_CREATE);
+
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                long durationNanos = LOCK_TIME *1000000000L; // seconds
-                long startTime = System.nanoTime();
-                while(System.nanoTime()+accumulated <= (startTime + durationNanos)) {
-                    long elapsed = System.nanoTime() - startTime;
-
-                    // Optional acceleration stuff
-                    long offset = (((elapsed+accumulated)-lastTime)*accelerator);
-                    elapsed += offset;
-                    elapsed += accumulated;
-                    setLastTime(elapsed);
-                    setAccumulated(accumulated+offset);
-                    if (accelerated) {
-                        setAccelerator(++accelerator);
+                while (binder == null){
+                    try {
+                        Thread.sleep(SLEEP_TIME, 0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+                }
+                binder.trackTime();
 
-                    final int percent = (int)(((double)elapsed / durationNanos) * 100);
+                while(binder.getRemainingTime() <= (LOCK_TIME*1000000000L)) {
+                    long elapsed = binder.getRemainingTime();
+                    final int percent = (int)(((double)elapsed / (LOCK_TIME*1000000000L)) * 100);
                     final double remaining = (double)elapsed / 1000000000L;
                     lockView.post(new Runnable() {
                         @Override
@@ -85,9 +117,6 @@ public class LockedActivity extends PassKeyboard {
                     }
                 }
 
-                setAccelerated(false);
-                setLastTime(0);
-                setAccumulated(0);
                 finish();
             }
         }).start();
@@ -103,38 +132,15 @@ public class LockedActivity extends PassKeyboard {
                 return false;
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                setAccelerated(false);
-                setAccelerator(0);
+                binder.setAccelerated(false);
+                binder.setAccelerator(0);
             } else {
-                setAccelerated(true);
+                binder.setAccelerated(true);
             }
             return true;
         }
     }
 
-    private void setLastTime(long newTime){
-        synchronized(LockedActivity.class){
-            lastTime = newTime;
-        }
-    }
-
-    private void setAccelerator(int accel){
-        synchronized(LockedActivity.class){
-            accelerator = accel;
-        }
-    }
-
-    private void setAccelerated(boolean a){
-        synchronized(LockedActivity.class){
-            accelerated = a;
-        }
-    }
-
-    private void setAccumulated(long acc){
-        synchronized(LockedActivity.class){
-            accumulated = acc;
-        }
-    }
 
     public void onPinLockInserted(){
         String pass = pinCodeField1.getText().toString() + pinCodeField2.getText().toString() +

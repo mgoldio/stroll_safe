@@ -4,8 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
-
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +14,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,6 +25,7 @@
             android:name=".LockedActivity"
             android:label="@string/title_activity_locked" >
         </activity>
+
         <service
             android:name=".util.FusedLocationService"
             android:enabled="true"
@@ -36,6 +36,12 @@
             android:name=".SetLockActivity"
             android:label="@string/title_activity_set_lock" >
         </activity>
+
+        <service
+            android:name=".util.BackgroundService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>
