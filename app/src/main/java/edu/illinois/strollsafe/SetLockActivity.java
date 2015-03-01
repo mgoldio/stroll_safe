@@ -1,41 +1,77 @@
 package edu.illinois.strollsafe;
 
-import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.Spanned;
+import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import edu.illinois.strollsafe.util.OhShitLock;
+import edu.illinois.strollsafe.util.PassKeyboard;
 
-public class SetLockActivity extends ActionBarActivity {
+public class SetLockActivity extends PassKeyboard {
+    private String pass0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_locked);
-
-
+        setContentView(R.layout.activity_set_lock);
+        initialize();
     }
 
+    public void onPinLockInserted() {
+        String pass = pinCodeField1.getText().toString() + pinCodeField2.getText().toString() +
+                pinCodeField3.getText().toString() + pinCodeField4.getText();
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_set_lock, menu);
-        return true;
-    }
+        // Reset the password display
+        pinCodeField1.setText("");
+        pinCodeField2.setText("");
+        pinCodeField3.setText("");
+        pinCodeField4.setText("");
+        pinCodeField1.requestFocus();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        if (pass0 == null) { // This is the first password
+            pass0 = pass;
+            return;
+        } else {
+            if (pass0.equals(pass)) { // Confirm password
+                OhShitLock.getInstance().setPass(this, pass);
+                finish();
+            } else {
+                // Set pass to null so they can try again twice
+                pass0 = null;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+                Thread shake = new Thread() {
+                    public void run() {
+                        Animation shake = AnimationUtils.loadAnimation(SetLockActivity.this, R.anim.shake);
+                        findViewById(R.id.AppUnlockLinearLayout1).startAnimation(shake);
+                        showPasswordError();
+                    }
+                };
+                runOnUiThread(shake);
+            }
         }
 
-        return super.onOptionsItemSelected(item);
+        return;
     }
+
+    protected void showPasswordError() {
+        Toast toast = Toast.makeText(SetLockActivity.this, "Passcodes did not match, try again", Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 30);
+        toast.show();
+    }
+
 }

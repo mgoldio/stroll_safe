@@ -17,7 +17,6 @@
 
         <include layout="@layout/pass_display"></include>
         <include layout="@layout/pass_keyboard"></include>
-    </RelativeLayout>
     <LinearLayout
         android:id="@+id/AppUnlockLinearLayout1"
         android:layout_width="fill_parent"
@@ -54,5 +53,6 @@
             android:layout_weight="1" />
 
     </LinearLayout>
+   </RelativeLayout>
 
 </RelativeLayout>

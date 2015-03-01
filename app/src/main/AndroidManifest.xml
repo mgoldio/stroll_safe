@@ -44,9 +44,7 @@
 
         <activity
             android:name=".SetLockActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_set_lock"
-            android:theme="@style/FullscreenTheme" >
+            android:label="@string/title_activity_set_lock" >
         </activity>
     </application>
 
