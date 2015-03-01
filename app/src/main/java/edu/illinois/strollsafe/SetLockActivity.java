@@ -46,8 +46,11 @@ public class SetLockActivity extends PassKeyboard {
         pinCodeField4.setText("");
         pinCodeField1.requestFocus();
 
+        TextView headerText = (TextView)findViewById(R.id.headerText);
+
         if (pass0 == null) { // This is the first password
             pass0 = pass;
+            headerText.setText("Re-enter Passcode:");
             return;
         } else {
             if (pass0.equals(pass)) { // Confirm password
@@ -66,6 +69,8 @@ public class SetLockActivity extends PassKeyboard {
                 };
                 runOnUiThread(shake);
             }
+
+            headerText.setText("Enter Passcode:");
         }
 
         return;
