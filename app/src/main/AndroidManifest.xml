@@ -12,7 +12,8 @@
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,20 +21,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".util.ReleaseModeActivity"
-            android:label="@string/title_activity_release_mode" >
-        </activity>
-        <activity
-            android:name=".util.ThumbReleasedActivity"
-            android:label="@string/title_activity_thumb_released" >
-        </activity>
-        <activity
             android:name=".LockedActivity"
             android:label="@string/title_activity_locked" >
-        </activity>
-        <activity
-            android:name=".util.ShakeModeActivity"
-            android:label="@string/title_activity_shake_mode" >
         </activity>
         <service
             android:name=".util.FusedLocationService"

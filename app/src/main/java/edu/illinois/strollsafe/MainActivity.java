@@ -3,6 +3,10 @@ package edu.illinois.strollsafe;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +18,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import edu.illinois.strollsafe.util.OhShitLock;
 
@@ -42,7 +50,10 @@ public class MainActivity extends Activity {
             startActivity(intent);
         }
         setContentView(R.layout.activity_main);
-        MyTouchListener listener = new MyTouchListener();
+
+        MyListener listener = new MyListener();
+        SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
         findViewById(R.id.mainLayout).setOnTouchListener(listener);
         findViewById(R.id.mainButton).setOnTouchListener(listener);
     }
@@ -179,7 +190,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class MyTouchListener implements View.OnTouchListener {
+    private class MyListener implements View.OnTouchListener, SensorEventListener {
+        private long lastShakeUpdate = System.nanoTime();
+        private float[] prevVector = new float[3];
+
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if(event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_DOWN)
@@ -215,6 +229,35 @@ public class MainActivity extends Activity {
                     break;
             }
             return true;
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            if(mode != Mode.SHAKE)
+                return;
+
+            long time = System.nanoTime();
+            if ((time - lastShakeUpdate) > 100000000) { // only check speed every 100ms
+                lastShakeUpdate = time;
+                float speed = (event.values[0] * event.values[0] + event.values[1] * event.values[1] + event.values[2] * event.values[2]);
+                float x = event.values[0] + prevVector[0];
+                float y = event.values[1] + prevVector[1];
+                float z = event.values[2] + prevVector[2];
+                prevVector[0] = event.values[0];
+                prevVector[1] = event.values[1];
+                prevVector[2] = event.values[2];
+                float deltaDir = (x * x + y * y + z * z);
+                if(deltaDir < 375 && speed > 600)
+                {
+                    startActivity(new Intent(getApplicationContext(), LockedActivity.class));
+                    changeMode(Mode.MAIN);
+                }
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // do nothing unless we decide we need to
         }
     }
 }
