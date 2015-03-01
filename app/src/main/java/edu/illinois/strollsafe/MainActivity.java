@@ -2,8 +2,6 @@ package edu.illinois.strollsafe;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.support.v7.app.ActionBarActivity;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Menu;
@@ -16,8 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
-
-import edu.illinois.strollsafe.util.LockedActivity;
 
 import edu.illinois.strollsafe.util.OhShitLock;
 
@@ -81,7 +77,7 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                long durationNanos = 2000000000L; // two seconds
+                long durationNanos = 1500000000L; // two seconds
                 long startTime = System.nanoTime();
                 while(System.nanoTime() <= (startTime + durationNanos)) {
                     if(mode != Mode.THUMB)
@@ -103,8 +99,11 @@ public class MainActivity extends Activity {
                         e.printStackTrace();
                     }
                 }
-                if(mode == Mode.THUMB)
+                if(mode == Mode.THUMB) {
+                    changeMode(Mode.MAIN);
                     startActivity(new Intent(getApplicationContext(), LockedActivity.class));
+                }
+
             }
         }).start();
         progressBar.setProgress(0);
