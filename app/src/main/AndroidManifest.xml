@@ -8,7 +8,7 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="Stroll Safe"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         <activity
             android:name=".MainActivity"
@@ -35,7 +35,6 @@
             android:name=".util.ShakeModeActivity"
             android:label="@string/title_activity_shake_mode" >
         </activity>
-
         <service
             android:name=".util.FusedLocationService"
             android:enabled="true"

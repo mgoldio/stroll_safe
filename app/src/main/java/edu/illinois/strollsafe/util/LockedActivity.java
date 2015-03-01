@@ -1,5 +1,6 @@
 package edu.illinois.strollsafe.util;
 
+import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -7,19 +8,19 @@ import android.view.MenuItem;
 
 import edu.illinois.strollsafe.R;
 
-public class ReleaseModeActivity extends ActionBarActivity {
+public class LockedActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_release_mode);
+        setContentView(R.layout.activity_locked);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_release_mode, menu);
+        getMenuInflater().inflate(R.menu.menu_locked, menu);
         return true;
     }
 
