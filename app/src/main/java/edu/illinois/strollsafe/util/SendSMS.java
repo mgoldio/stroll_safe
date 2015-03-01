@@ -14,19 +14,19 @@ import android.telephony.SmsManager;
 import android.content.Context;
 import android.util.Log;
 
-public class SendSMS { //contact MetCad? in Urbana but employee of Champaign
+public class SendSMS {
 
-   public void sendSMS(Context context) {
+   public static void sendSMS(Context context) {
        String destination = "13017515134"; //Noah's phone number
        String text = "Your penis is weak";
        sendEmergencySMS(context, destination, text);
    }
 
-   private void sendEmergencySMS(Context context, String phoneNo, String message) {
+   private static void sendEmergencySMS(Context context, String phoneNo, String message) {
 
        Log.i("Send SMS", "seeing where this goes");
        try {
-           SmsManager smsManager = SmsManager.getDefault(); //add an "=" here
+           SmsManager smsManager = SmsManager.getDefault();
            smsManager.sendTextMessage(phoneNo, null, message, null, null);
            //might need to change last 2 nulls (intent?)
            Toast.makeText(context.getApplicationContext(), "IT WORKED!!",
