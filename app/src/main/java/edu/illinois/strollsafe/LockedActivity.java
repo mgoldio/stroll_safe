@@ -34,9 +34,13 @@ import edu.illinois.strollsafe.util.BackgroundService;
 import edu.illinois.strollsafe.util.OhShitLock;
 import edu.illinois.strollsafe.util.PassKeyboard;
 
+import static edu.illinois.strollsafe.util.SendSMS.sendSMS;
+
 public class LockedActivity extends PassKeyboard {
     private static final long LOCK_TIME = 20;
     private static final long SLEEP_TIME = 20;
+    private static long time;
+
 
     private BackgroundService.MyBinder binder;
 
@@ -96,10 +100,12 @@ public class LockedActivity extends PassKeyboard {
                         e.printStackTrace();
                     }
                 }
+                binder.setContext(LockedActivity.this);
                 binder.trackTime();
 
                 while(binder.getRemainingTime() <= (LOCK_TIME*1000000000L)) {
                     long elapsed = binder.getRemainingTime();
+                    time = elapsed;
                     final int percent = (int)(((double)elapsed / (LOCK_TIME*1000000000L)) * 100);
                     final double remaining = (double)elapsed / 1000000000L;
                     lockView.post(new Runnable() {
@@ -116,6 +122,7 @@ public class LockedActivity extends PassKeyboard {
                     }
                 }
 
+                unbindService(conn);
                 finish();
             }
         }).start();
@@ -145,6 +152,7 @@ public class LockedActivity extends PassKeyboard {
                 pinCodeField3.getText().toString() + pinCodeField4.getText();
 
         if( OhShitLock.getInstance().checkPass(pass) ) {
+            unbindService(conn);
             finish();
         } else {
             Thread shake = new Thread() {
@@ -169,5 +177,13 @@ public class LockedActivity extends PassKeyboard {
         Toast toast = Toast.makeText(LockedActivity.this, getString(R.string.wrong_passcode), Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL, 0, 30);
         toast.show();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        if ( time >= ((LOCK_TIME-1)*1000000000L)){
+            sendSMS(this);
+        }
     }
 }

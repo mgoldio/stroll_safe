@@ -1,6 +1,7 @@
 package edu.illinois.strollsafe.util;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.Binder;
@@ -9,10 +10,13 @@ import android.widget.Toast;
 
 import java.util.concurrent.Callable;
 
+import edu.illinois.strollsafe.LockedActivity;
 import edu.illinois.strollsafe.MainActivity;
 import edu.illinois.strollsafe.R;
 import edu.illinois.strollsafe.SetLockActivity;
-import static edu.illinois.strollsafe.util.SendSMS;
+
+import static edu.illinois.strollsafe.util.SendSMS.sendSMS;
+
 
 public class BackgroundService extends Service {
     private boolean quit;
@@ -25,6 +29,7 @@ public class BackgroundService extends Service {
     private static long lastTime;
     private static long accumulated;
     private static boolean accelerated = false;
+    private static Context c;
 
     // The class that will feed the ui our count data
     public class MyBinder extends Binder{
@@ -48,6 +53,15 @@ public class BackgroundService extends Service {
             }.start();
         }
 
+        public void restore(){
+            Intent dialogIntent = new Intent(getBaseContext(), c.getClass());
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            c.startActivity(dialogIntent);
+        }
+
+        public void setContext(Context ctx){
+            c = ctx;
+        }
 
         public void trackTime(){
             new Thread(new Runnable() {
@@ -75,11 +89,10 @@ public class BackgroundService extends Service {
                             e.printStackTrace();
                         }
                     }
-
-                    sendSMS(this);
-                    setAccelerated(false);
-                    setLastTime(0);
-                    setAccumulated(0);
+                    if (!quit) {
+                        binder.restore();
+                    }
+                    stopSelf();
                 }
             }).start();
         }
@@ -131,6 +144,13 @@ public class BackgroundService extends Service {
     public boolean onUnbind(Intent intent)
     {
         System.out.println("Service is Unbinded");
+        binder.setAccumulated(0);
+        binder.setAccelerator(0);
+        binder.setAccelerated(false);
+        binder.setContext(null);
+        binder.setLastTime(0);
+        this.quit=true;
+
         return true;
     }
 
