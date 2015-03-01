@@ -50,7 +50,7 @@ public class LockedActivity extends PassKeyboard {
         final TextView timerText = (TextView)findViewById(R.id.timerText);
         progressBar.setIndeterminate(false);
         progressBar.setMax(100);
-        progressBar.setProgress(20);
+        progressBar.setProgress(0);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -88,10 +88,15 @@ public class LockedActivity extends PassKeyboard {
                 setAccelerated(false);
                 setLastTime(0);
                 setAccumulated(0);
-                finish();
+                lockView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setProgress(100);
+                        timerText.setText(String.format("%.01f", 0.0));
+                    }
+                });
             }
         }).start();
-        progressBar.setProgress(0);
 
         progressBar.setOnTouchListener(new SpeedyTouchListener());
     }

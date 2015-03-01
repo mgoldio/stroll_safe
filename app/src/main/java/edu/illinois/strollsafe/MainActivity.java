@@ -20,10 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import edu.illinois.strollsafe.util.OhShitLock;
 
@@ -58,6 +54,7 @@ public class MainActivity extends Activity {
         sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
         findViewById(R.id.mainLayout).setOnTouchListener(listener);
         findViewById(R.id.mainButton).setOnTouchListener(listener);
+        findViewById(R.id.closeButton).setOnLongClickListener(listener);
     }
 
 
@@ -89,7 +86,7 @@ public class MainActivity extends Activity {
 
         final View mainView = findViewById(R.id.mainLayout);
         final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
-        final TextView timerText = (TextView)findViewById(R.id.timerText);
+        final TextView middleText = (TextView)findViewById(R.id.middleText);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -106,7 +103,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             progressBar.setProgress(percent);
-                            timerText.setText(String.format("%.02f seconds remaining", 2d - remaining));
+                            middleText.setText(String.format("%.01f seconds remaining", 2d - remaining));
                         }
                     });
                     try {
@@ -135,7 +132,8 @@ public class MainActivity extends Activity {
         TextView subText = (TextView)findViewById(R.id.subText);
         Space space1 = (Space)findViewById(R.id.space1);
         ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
-        TextView timerText = (TextView)findViewById(R.id.timerText);
+        ImageButton closeButton = (ImageButton)findViewById(R.id.closeButton);
+        TextView middleText = (TextView)findViewById(R.id.middleText);
         Space space2 = (Space)findViewById(R.id.space2);
         ImageButton mainButton = (ImageButton)findViewById(R.id.mainButton);
         TextView bottomText = (TextView)findViewById(R.id.bottomText);
@@ -147,12 +145,13 @@ public class MainActivity extends Activity {
                 headerText.setText("Stroll Safe");
                 subText.setText("Keeping You Safe on Late Night Strolls");
                 space1.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-                progressBar.setVisibility(View.INVISIBLE);
-                timerText.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.GONE);
+                closeButton.setVisibility(View.GONE);
+                middleText.setVisibility(View.GONE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 mainButton.setImageDrawable(getResources().getDrawable(fingerId));
-                bottomText.setVisibility(View.VISIBLE);
                 bottomText.setText("Press and Hold to Arm");
+                bottomText.setVisibility(View.VISIBLE);
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 break;
 
@@ -160,12 +159,13 @@ public class MainActivity extends Activity {
                 headerText.setText("Release Mode");
                 subText.setText("Release Thumb to Contact Police");
                 space1.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-                progressBar.setVisibility(View.INVISIBLE);
-                timerText.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.GONE);
+                closeButton.setVisibility(View.GONE);
+                middleText.setVisibility(View.GONE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 mainButton.setImageDrawable(getResources().getDrawable(shakeId));
-                bottomText.setVisibility(View.VISIBLE);
                 bottomText.setText("Slide Thumb and Release to Enter Shake Mode");
+                bottomText.setVisibility(View.VISIBLE);
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 3f));
                 break;
 
@@ -173,12 +173,14 @@ public class MainActivity extends Activity {
                 headerText.setText("Shake Mode");
                 subText.setText("Shake Phone to Contact Police");
                 space1.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-                progressBar.setVisibility(View.INVISIBLE);
-                timerText.setVisibility(View.INVISIBLE);
-                space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
+                progressBar.setVisibility(View.GONE);
+                closeButton.setVisibility(View.VISIBLE);
+                middleText.setText("Press and Hold to Exit the App");
+                middleText.setVisibility(View.VISIBLE);
+                space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
                 mainButton.setImageDrawable(getResources().getDrawable(fingerId));
-                bottomText.setVisibility(View.VISIBLE);
                 bottomText.setText("Press and Hold to Enter Release Mode");
+                bottomText.setVisibility(View.VISIBLE);
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 break;
 
@@ -187,17 +189,18 @@ public class MainActivity extends Activity {
                 subText.setText("Press and Hold Button to Cancel");
                 space1.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
                 progressBar.setVisibility(View.VISIBLE);
-                timerText.setVisibility(View.VISIBLE);
+                closeButton.setVisibility(View.GONE);
+                middleText.setVisibility(View.VISIBLE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
                 mainButton.setImageDrawable(getResources().getDrawable(fingerId));
-                bottomText.setVisibility(View.INVISIBLE);
+                bottomText.setVisibility(View.GONE);
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 HandleThumbReleased();
                 break;
         }
     }
 
-    private class MyListener implements View.OnTouchListener, SensorEventListener {
+    private class MyListener implements View.OnTouchListener, View.OnLongClickListener, SensorEventListener {
         private long lastShakeUpdate = System.nanoTime();
         private float[] prevVector = new float[3];
 
@@ -265,6 +268,15 @@ public class MainActivity extends Activity {
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
             // do nothing unless we decide we need to
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            if(v.getId() != R.id.closeButton)
+                return false;
+            // TODO kill service
+            finish();
+            return true;
         }
     }
 
