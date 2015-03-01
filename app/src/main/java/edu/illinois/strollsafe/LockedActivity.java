@@ -1,9 +1,11 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
@@ -39,6 +41,9 @@ public class LockedActivity extends PassKeyboard {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_locked);
         initialize();
+
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(200);
 
         final View lockView = findViewById(R.id.lockView);
         final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar2);
@@ -83,6 +88,7 @@ public class LockedActivity extends PassKeyboard {
                 setAccelerated(false);
                 setLastTime(0);
                 setAccumulated(0);
+                finish();
             }
         }).start();
         progressBar.setProgress(0);

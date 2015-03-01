@@ -1,6 +1,7 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.hardware.Sensor;
@@ -8,6 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -82,6 +84,9 @@ public class MainActivity extends Activity {
     }
 
     private void HandleThumbReleased() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(100);
+
         final View mainView = findViewById(R.id.mainLayout);
         final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
         final TextView timerText = (TextView)findViewById(R.id.timerText);
