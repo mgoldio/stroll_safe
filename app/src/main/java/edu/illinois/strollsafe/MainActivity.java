@@ -100,10 +100,14 @@ public class MainActivity extends Activity {
                     }
                 }
                 if(mode == Mode.THUMB) {
-                    changeMode(Mode.MAIN);
-                    startActivity(new Intent(getApplicationContext(), LockedActivity.class));
+                    mainView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            startActivity(new Intent(getApplicationContext(), LockedActivity.class));
+                            changeMode(Mode.MAIN);
+                        }
+                    });
                 }
-
             }
         }).start();
         progressBar.setProgress(0);
