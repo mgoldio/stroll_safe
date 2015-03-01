@@ -62,6 +62,8 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:id="@+id/mainButton"
+            android:background="@null"
+            android:src="@drawable/finger_icon"
             android:layout_gravity="center_horizontal"
             android:longClickable="true" />
 

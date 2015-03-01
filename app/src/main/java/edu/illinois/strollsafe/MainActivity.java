@@ -140,6 +140,8 @@ public class MainActivity extends Activity {
         ImageButton mainButton = (ImageButton)findViewById(R.id.mainButton);
         TextView bottomText = (TextView)findViewById(R.id.bottomText);
         Space space3 = (Space)findViewById(R.id.space3);
+        int fingerId = getResources().getIdentifier("@drawable/finger_icon", null, getPackageName());
+        int shakeId = getResources().getIdentifier("@drawable/shake_icon", null, getPackageName());
         switch(mode) {
             case MAIN:
                 headerText.setText("Stroll Safe");
@@ -148,7 +150,7 @@ public class MainActivity extends Activity {
                 progressBar.setVisibility(View.INVISIBLE);
                 timerText.setVisibility(View.INVISIBLE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
-                // TODO: change mainButton image to fingerprint
+                mainButton.setImageDrawable(getResources().getDrawable(fingerId));
                 bottomText.setVisibility(View.VISIBLE);
                 bottomText.setText("Press and Hold to Arm");
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
@@ -161,7 +163,7 @@ public class MainActivity extends Activity {
                 progressBar.setVisibility(View.INVISIBLE);
                 timerText.setVisibility(View.INVISIBLE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
-                // TODO: change mainButton image to shaking phone
+                mainButton.setImageDrawable(getResources().getDrawable(shakeId));
                 bottomText.setVisibility(View.VISIBLE);
                 bottomText.setText("Slide Thumb and Release to Enter Shake Mode");
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 3f));
@@ -174,7 +176,7 @@ public class MainActivity extends Activity {
                 progressBar.setVisibility(View.INVISIBLE);
                 timerText.setVisibility(View.INVISIBLE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
-                // TODO: change mainButton image to fingerprint
+                mainButton.setImageDrawable(getResources().getDrawable(fingerId));
                 bottomText.setVisibility(View.VISIBLE);
                 bottomText.setText("Press and Hold to Enter Release Mode");
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
@@ -187,7 +189,7 @@ public class MainActivity extends Activity {
                 progressBar.setVisibility(View.VISIBLE);
                 timerText.setVisibility(View.VISIBLE);
                 space2.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-                // TODO: change mainButton image to fingerprint
+                mainButton.setImageDrawable(getResources().getDrawable(fingerId));
                 bottomText.setVisibility(View.INVISIBLE);
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 HandleThumbReleased();
