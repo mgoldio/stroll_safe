@@ -1,30 +1,18 @@
 package edu.illinois.strollsafe;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.Spanned;
-import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.OhShitLock;
 import edu.illinois.strollsafe.util.PassKeyboard;
 
@@ -41,6 +29,8 @@ public class LockedActivity extends PassKeyboard {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_locked);
         initialize();
+
+        OhShitLock.getInstance().setLocked(true);
 
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(200);
@@ -95,6 +85,8 @@ public class LockedActivity extends PassKeyboard {
                         timerText.setText(String.format("%.01f", 0.0));
                     }
                 });
+                
+                EmergencyContacter.makeEmergencyCall(lockView.getContext());
             }
         }).start();
 
@@ -146,6 +138,7 @@ public class LockedActivity extends PassKeyboard {
                 pinCodeField3.getText().toString() + pinCodeField4.getText();
 
         if( OhShitLock.getInstance().checkPass(pass) ) {
+            OhShitLock.getInstance().setLocked(false);
             finish();
         } else {
             Thread shake = new Thread() {

@@ -10,6 +10,7 @@ import android.util.Log;
 public class OhShitLock {
     private String key;
     private static OhShitLock instance;
+    private boolean isLocked = false;
     public static final String PREFS_NAME = "StrollSafePrefs";
 
     protected OhShitLock(){
@@ -22,6 +23,14 @@ public class OhShitLock {
         }
 
         return instance;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.isLocked = locked;
     }
 
     public boolean checkPass(String pass){
