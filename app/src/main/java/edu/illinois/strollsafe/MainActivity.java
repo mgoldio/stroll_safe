@@ -68,6 +68,9 @@ public class MainActivity extends Activity {
                 long durationNanos = 2000000000L; // two seconds
                 long startTime = System.nanoTime();
                 while(System.nanoTime() <= (startTime + durationNanos)) {
+                    if(mode != Mode.THUMB)
+                        return;
+
                     final long elapsed = System.nanoTime() - startTime;
                     final int percent = (int)(((double)elapsed / durationNanos) * 100);
                     final double remaining = (double)elapsed / 1000000000L;
@@ -79,7 +82,7 @@ public class MainActivity extends Activity {
                         }
                     });
                     try {
-                        Thread.sleep(50, 0);
+                        Thread.sleep(20, 0);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -88,6 +91,7 @@ public class MainActivity extends Activity {
                     startActivity(new Intent(getApplicationContext(), LockedActivity.class));
             }
         }).start();
+        progressBar.setProgress(0);
     }
 
     private void changeMode(Mode newMode) {

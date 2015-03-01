@@ -1,5 +1,6 @@
 package edu.illinois.strollsafe.util;
 
+import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -7,7 +8,7 @@ import android.view.MenuItem;
 
 import edu.illinois.strollsafe.R;
 
-public class LockedActivity extends ActionBarActivity {
+public class LockedActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
