@@ -262,17 +262,23 @@ public class MainActivity extends Activity {
             }
         }
 
-        public void onStop(){
-            changeMode(Mode.SHAKE);
-        }
-
-        public void onPause(){
-            changeMode(Mode.SHAKE);
-        }
-
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
             // do nothing unless we decide we need to
         }
     }
+
+
+    @Override
+    protected void onStop(){
+        changeMode(Mode.SHAKE);
+        super.onStop();
+    }
+
+    @Override
+    protected void onPause(){
+        changeMode(Mode.SHAKE);
+        super.onPause();
+    }
+
 }
