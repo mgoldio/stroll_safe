@@ -15,21 +15,42 @@ public class TimedThread {
     /**
      * Creates a new Timed Thread
      * @param runnable the runnable to execute over and over until the time has elapsed
-     * @param millis
-     * @param waitMillis
+     * @param millis the duration of the timed thread
+     * @param waitMillis the time the thread should wait between executing the runnable
      */
     public TimedThread(Runnable runnable, long millis, long waitMillis) {
         this.runnable = createTimedRunnable(runnable, millis, waitMillis);
         thread = new Thread(runnable);
     }
 
+    /**
+     * Starts the timed thread
+     */
     public void start() {
         thread.start();
         isRunning = true;
     }
 
+    /**
+     * Stops the thread
+     */
     public void stop() {
         isRunning = false;
+    }
+
+    /**
+     * Unsafely stops the thread
+     */
+    public void forciblyStop() {
+        isRunning = false;
+        thread.interrupt();
+    }
+
+    /**
+     * @return true if the thread is running
+     */
+    public boolean isRunning() {
+        return isRunning;
     }
 
     private Runnable createTimedRunnable(final Runnable runnable, final long millis, final long waitMillis) {
@@ -46,9 +67,10 @@ public class TimedThread {
                     try {
                         Thread.sleep(waitMillis);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        // do nothing since forciblyStop could cause this
                     }
                 }
+                isRunning = false;
             }
         };
     }
