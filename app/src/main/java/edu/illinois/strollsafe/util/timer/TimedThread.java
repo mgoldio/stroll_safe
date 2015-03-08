@@ -15,11 +15,11 @@ public class TimedThread {
     /**
      * Creates a new Timed Thread
      * @param runnable the runnable to execute over and over until the time has elapsed
-     * @param millis the duration of the timed thread
+     * @param timer a Timer that holds the duration of the timed thread
      * @param waitMillis the time the thread should wait between executing the runnable
      */
-    public TimedThread(Runnable runnable, long millis, long waitMillis) {
-        this.runnable = createTimedRunnable(runnable, millis, waitMillis);
+    public TimedThread(Runnable runnable, Timer timer, long waitMillis) {
+        this.runnable = createTimedRunnable(runnable, timer, waitMillis);
         thread = new Thread(runnable);
     }
 
@@ -53,12 +53,13 @@ public class TimedThread {
         return isRunning;
     }
 
-    private Runnable createTimedRunnable(final Runnable runnable, final long millis, final long waitMillis) {
+    private Runnable createTimedRunnable(final Runnable runnable, final Timer timer, final long waitMillis) {
         return new Runnable() {
             @Override
             public void run() {
-                long startTime = System.nanoTime();
-                while((System.nanoTime() - startTime) > (millis * 1000000L))
+                timer.reset();
+                timer.start();
+                while(!timer.hasElapsed())
                 {
                     if(!isRunning)
                         return;
