@@ -8,7 +8,6 @@ package edu.illinois.strollsafe.util.timer;
  */
 public class TimedThread {
 
-    private final Runnable runnable;
     private final Thread thread;
     private volatile boolean isRunning = false;
 
@@ -19,8 +18,7 @@ public class TimedThread {
      * @param waitMillis the time the thread should wait between executing the runnable
      */
     public TimedThread(Runnable runnable, Timer timer, long waitMillis) {
-        this.runnable = createTimedRunnable(runnable, timer, waitMillis);
-        thread = new Thread(runnable);
+        thread = new Thread(createTimedRunnable(runnable, timer, waitMillis));
     }
 
     /**

@@ -1,91 +1,26 @@
 package edu.illinois.strollsafe.util.timer;
 
 /**
- * A collection of methods useful for timing things
+ * Interface declaring methods a Timer should have
  *
  * @author Michael Goldstein
  */
-public class Timer {
+public interface Timer {
 
-    private final long duration;
+    void start();
 
-    private long startNanos;
-    private boolean started;
-    private boolean paused;
-    private long pausedStartNanos;
-    private long pausedNanos;
+    void stop();
 
-    /**
-     * @param duration the duration, in millis
-     */
-    public Timer(long duration) {
-        this.duration = duration;
-    }
+    void pause();
 
-    /**
-     * Starts the timer
-     */
-    public void start() {
-        started = true;
-        startNanos = System.nanoTime();
-    }
+    void resume();
 
-    /**
-     * Stops the timer
-     */
-    public void stop() {
-        started = false;
-        paused = false;
-    }
+    void reset();
 
-    /**
-     * Pauses the timer, keeping the time already elapsed
-     */
-    public void pause() {
-        paused = true;
-        pausedStartNanos = System.nanoTime();
-    }
+    long getTimeRemaining();
 
-    /**
-     * Resumes the timer
-     */
-    public void resume() {
-        paused = false;
-        pausedNanos += System.nanoTime() - pausedStartNanos;
-    }
+    boolean isRunning();
 
-    /**
-     * Resets the timer; an alias for stop()
-     */
-    public void reset() {
-        stop();
-    }
+    boolean hasElapsed();
 
-    /**
-     * @return the time remaining on the timer, in millis
-     */
-    public long getTimeRemaining() {
-        if(!started)
-            return duration;
-
-        long pausedNanosCur = 0L;
-        if(paused)
-            pausedNanosCur = System.nanoTime() - pausedStartNanos;
-
-        return (System.nanoTime() - pausedNanosCur - pausedNanos - startNanos) / 1000000L;
-    }
-
-    /**
-     * @return true if the timer is started, not paused, and has not elapsed
-     */
-    public boolean isRunning() {
-        return started && !paused && !hasElapsed();
-    }
-
-    /**
-     * @return true if the timer's duration has elapsed
-     */
-    public boolean hasElapsed() {
-        return getTimeRemaining() <= 0;
-    }
 }
