@@ -1,28 +1,13 @@
 package edu.illinois.strollsafe;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.text.Spanned;
-import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import edu.illinois.strollsafe.util.OhShitLock;
+import edu.illinois.strollsafe.lock.OhShitLock;
 import edu.illinois.strollsafe.util.PassKeyboard;
 
 public class SetLockActivity extends PassKeyboard {

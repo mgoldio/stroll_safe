@@ -35,11 +35,6 @@
             android:label="@string/title_activity_set_lock" >
         </activity>
 
-        <service
-            android:name=".util.BackgroundService"
-            android:enabled="true"
-            android:exported="true" >
-        </service>
     </application>
 
 </manifest>

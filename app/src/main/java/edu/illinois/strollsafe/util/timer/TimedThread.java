@@ -36,8 +36,10 @@ public class TimedThread {
         if (isRunning)
             throw new IllegalThreadStateException("the thread has already been started");
 
-        timer.reset();
-        timer.start();
+        if(!timer.isRunning()) {
+            timer.reset();
+            timer.start();
+        }
         thread.start();
         isRunning = true;
     }

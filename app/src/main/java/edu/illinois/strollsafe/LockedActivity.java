@@ -1,15 +1,8 @@
 package edu.illinois.strollsafe;
 
-import android.app.Activity;
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.Vibrator;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -19,38 +12,24 @@ import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import edu.illinois.strollsafe.util.BackgroundService;
+
+import edu.illinois.strollsafe.lock.LockBackgroundService;
+import edu.illinois.strollsafe.lock.OhShitLock;
 import edu.illinois.strollsafe.util.EmergencyContacter;
-import edu.illinois.strollsafe.util.OhShitLock;
 import edu.illinois.strollsafe.util.PassKeyboard;
+import edu.illinois.strollsafe.util.timer.AcceleratableTimer;
+import edu.illinois.strollsafe.util.timer.TimedThread;
+import edu.illinois.strollsafe.util.timer.Timer;
 
 public class LockedActivity extends PassKeyboard {
-    private static final long LOCK_TIME = 20;
-    private static final long SLEEP_TIME = 20;
-    private static long time;
 
+    private static final AcceleratableTimer timer = new AcceleratableTimer(20000);
+    private TimedThread timedThread;
+    private Intent serviceIntent;
 
-    private BackgroundService.MyBinder binder;
-
-    // define a ServiceConnection object
-    private ServiceConnection conn = new ServiceConnection()
-    {
-        // then the Activity connected with the Service, this will be called
-        @Override
-        public void onServiceConnected(ComponentName name
-                , IBinder service)
-        {
-            System.out.println("--Service Connected--");
-            // achieve MyBinder instance
-            binder = (BackgroundService.MyBinder) service;
-        }
-        // then the connection break off
-        @Override
-        public void onServiceDisconnected(ComponentName name)
-        {
-            System.out.println("--Service Disconnected--");
-        }
-    };
+    public static Timer getLockTimer() {
+        return timer;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,59 +43,39 @@ public class LockedActivity extends PassKeyboard {
         v.vibrate(200);
 
         final View lockView = findViewById(R.id.lockView);
-        final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar2);
-        final TextView timerText = (TextView)findViewById(R.id.timerText);
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar2);
+        final TextView timerText = (TextView) findViewById(R.id.timerText);
         progressBar.setIndeterminate(false);
         progressBar.setMax(100);
-        progressBar.setProgress(20);
-        Intent intent = null;
-        // Connect to our count-y service thingamabob
-        try{
-            intent = new Intent(this, Class.forName(BackgroundService.class.getName()));
-        }
-        catch (ClassNotFoundException e) {
+        progressBar.setProgress(0);
+
+        timer.reset();
+        try {
+            serviceIntent = new Intent(this, Class.forName(LockBackgroundService.class.getName()));
+        } catch (ClassNotFoundException e) {
             System.out.println(e.getMessage());
         }
-        startService(intent);
-        bindService(intent , conn , Service.BIND_AUTO_CREATE);
-
-        new Thread(new Runnable() {
+        startService(serviceIntent);
+        timedThread = new TimedThread(new Runnable() {
             @Override
             public void run() {
-                while (binder == null){
-                    try {
-                        Thread.sleep(SLEEP_TIME, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                final int percent = (int) (((double) timer.getTimeElapsed() / timer.getDuration()) * 100);
+                final double remaining = timer.getTimeRemaining() / 1000d;
+                lockView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setProgress(percent);
+                        timerText.setText(String.format("%.01f", remaining));
                     }
-                }
-                binder.setContext(LockedActivity.this);
-                binder.trackTime();
-
-                while(binder.getRemainingTime() <= (LOCK_TIME*1000000000L)) {
-                    long elapsed = binder.getRemainingTime();
-                    time = elapsed;
-                    final int percent = (int)(((double)elapsed / (LOCK_TIME*1000000000L)) * 100);
-                    final double remaining = (double)elapsed / 1000000000L;
-                    lockView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressBar.setProgress(percent);
-                            timerText.setText(String.format("%.01f", LOCK_TIME - remaining));
-                        }
-                    });
-                    try {
-                        Thread.sleep(SLEEP_TIME, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                unbindService(conn);
-                EmergencyContacter.makeEmergencyCall(LockedActivity.this);
+                });
+            }
+        }, timer, 50L, new Runnable() {
+            @Override
+            public void run() {
                 finish();
             }
-        }).start();
-
+        });
+        timedThread.start();
         progressBar.setOnTouchListener(new SpeedyTouchListener());
     }
 
@@ -125,29 +84,25 @@ public class LockedActivity extends PassKeyboard {
         public boolean onTouch(View v, MotionEvent event) {
             if (event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_DOWN)
                 return false;
-            if(binder !=null ) {
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    binder.setAccelerated(false);
-                    binder.setAccelerator(0);
-                } else {
-                    binder.setAccelerated(true);
-                }
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                timer.setAcceleration(25.0);
+            } else {
+                timer.setAcceleration(0.0);
+                timer.setVelocity(0.0);
             }
             return true;
         }
     }
 
 
-    public void onPinLockInserted(){
+    public void onPinLockInserted() {
         String pass = pinCodeField1.getText().toString() + pinCodeField2.getText().toString() +
                 pinCodeField3.getText().toString() + pinCodeField4.getText();
 
-        if( OhShitLock.getInstance().checkPass(pass) ) {
-            try {
-                unbindService(conn);
-            } catch (Exception e){
+        if (OhShitLock.getInstance().checkPass(pass)) {
+            if (serviceIntent != null)
+                stopService(serviceIntent);
 
-            }
             OhShitLock.getInstance().setLocked(false);
             finish();
         } else {
@@ -165,42 +120,22 @@ public class LockedActivity extends PassKeyboard {
             };
             runOnUiThread(shake);
         }
-
-        return;
     }
 
-    protected void showPasswordError(){
+    protected void showPasswordError() {
         Toast toast = Toast.makeText(LockedActivity.this, getString(R.string.wrong_passcode), Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL, 0, 30);
+        toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 30);
         toast.show();
     }
 
     @Override
-    protected void onResume(){
-        super.onResume();
-        if ( time >= ((LOCK_TIME-1)*1000000000L)){
-            try{
-                unbindService(conn);
-            }catch (Exception e){
-
-            }
-
-            System.out.println("RESUME CALL");
-          EmergencyContacter.makeEmergencyCall(this);
-          time = 0;
-            finish();
-        }
-    }
-
-    @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
+        if (OhShitLock.getInstance().isLocked())
+            EmergencyContacter.sendEmergency(this);
+        if (timedThread != null)
+            timedThread.forciblyStop();
 
         OhShitLock.getInstance().setLocked(false);
-        try{
-           unbindService(conn);
-        }catch (Exception e){
-
-        }
     }
 }

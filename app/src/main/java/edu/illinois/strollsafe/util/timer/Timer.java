@@ -17,6 +17,8 @@ public interface Timer {
 
     void reset();
 
+    long getDuration();
+
     long getTimeRemaining();
 
     long getTimeElapsed();

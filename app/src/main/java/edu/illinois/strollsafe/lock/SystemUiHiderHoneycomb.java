@@ -1,4 +1,4 @@
-package edu.illinois.strollsafe.util;
+package edu.illinois.strollsafe.lock;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

@@ -1,8 +1,7 @@
-package edu.illinois.strollsafe.util;
+package edu.illinois.strollsafe.lock;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 /**
  * Created by noah on 2/28/15.

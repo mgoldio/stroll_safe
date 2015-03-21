@@ -71,11 +71,11 @@ public class SimpleTimer implements Timer {
      */
     @Override
     public long getTimeRemaining() {
-        if(!started)
+        if (!started)
             return duration;
 
         long pausedNanosCur = 0L;
-        if(paused)
+        if (paused)
             pausedNanosCur = System.nanoTime() - pausedStartNanos;
 
         return duration - (System.nanoTime() - pausedNanosCur - pausedNanos - startNanos) / 1000000L;
@@ -87,6 +87,11 @@ public class SimpleTimer implements Timer {
     @Override
     public long getTimeElapsed() {
         return duration - getTimeRemaining();
+    }
+
+    @Override
+    public long getDuration() {
+        return duration;
     }
 
     /**

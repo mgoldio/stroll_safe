@@ -22,7 +22,7 @@ import android.widget.Space;
 import android.widget.TextView;
 
 import edu.illinois.strollsafe.util.EmergencyContacter;
-import edu.illinois.strollsafe.util.OhShitLock;
+import edu.illinois.strollsafe.lock.OhShitLock;
 import edu.illinois.strollsafe.util.timer.SimpleTimer;
 import edu.illinois.strollsafe.util.timer.TimedThread;
 import edu.illinois.strollsafe.util.timer.Timer;
@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
             public void run() {
                 if(mode != Mode.THUMB)
                     Thread.currentThread().interrupt();
-                final int percent = (int)(((double)timer.getTimeElapsed() / duration) * 100);
+                final int percent = (int)(((double)timer.getTimeElapsed() / timer.getDuration()) * 100);
                 final double remaining = timer.getTimeRemaining() / 1000d;
                 mainView.post(new Runnable() {
                     @Override
@@ -301,6 +301,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop(){
+        // TODO clean this shit up
         if(pauseNeedsMainSwitchCounter >= 0)
         {
             changeMode(Mode.MAIN);
@@ -318,6 +319,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause(){
+        // TODO clean this shit up
         if(pauseNeedsMainSwitchCounter >= 0)
         {
             changeMode(Mode.MAIN);

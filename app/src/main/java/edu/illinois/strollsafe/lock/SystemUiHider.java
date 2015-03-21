@@ -1,4 +1,4 @@
-package edu.illinois.strollsafe.util;
+package edu.illinois.strollsafe.lock;
 
 import android.app.Activity;
 import android.os.Build;
