@@ -25,6 +25,7 @@ public class SimpleTimer implements Timer {
     /**
      * Starts the timer
      */
+    @Override
     public void start() {
         started = true;
         startNanos = System.nanoTime();
@@ -33,6 +34,7 @@ public class SimpleTimer implements Timer {
     /**
      * Stops the timer
      */
+    @Override
     public void stop() {
         started = false;
         paused = false;
@@ -41,6 +43,7 @@ public class SimpleTimer implements Timer {
     /**
      * Pauses the timer, keeping the time already elapsed
      */
+    @Override
     public void pause() {
         paused = true;
         pausedStartNanos = System.nanoTime();
@@ -49,6 +52,7 @@ public class SimpleTimer implements Timer {
     /**
      * Resumes the timer
      */
+    @Override
     public void resume() {
         paused = false;
         pausedNanos += System.nanoTime() - pausedStartNanos;
@@ -57,6 +61,7 @@ public class SimpleTimer implements Timer {
     /**
      * Resets the timer; an alias for stop()
      */
+    @Override
     public void reset() {
         stop();
     }
@@ -64,6 +69,7 @@ public class SimpleTimer implements Timer {
     /**
      * @return the time remaining on the timer, in millis
      */
+    @Override
     public long getTimeRemaining() {
         if(!started)
             return duration;
@@ -72,12 +78,21 @@ public class SimpleTimer implements Timer {
         if(paused)
             pausedNanosCur = System.nanoTime() - pausedStartNanos;
 
-        return (System.nanoTime() - pausedNanosCur - pausedNanos - startNanos) / 1000000L;
+        return duration - (System.nanoTime() - pausedNanosCur - pausedNanos - startNanos) / 1000000L;
+    }
+
+    /**
+     * @return the time elapsed, in millis
+     */
+    @Override
+    public long getTimeElapsed() {
+        return duration - getTimeRemaining();
     }
 
     /**
      * @return true if the timer is started, not paused, and has not elapsed
      */
+    @Override
     public boolean isRunning() {
         return started && !paused && !hasElapsed();
     }
@@ -85,6 +100,7 @@ public class SimpleTimer implements Timer {
     /**
      * @return true if the timer's duration has elapsed
      */
+    @Override
     public boolean hasElapsed() {
         return getTimeRemaining() <= 0;
     }

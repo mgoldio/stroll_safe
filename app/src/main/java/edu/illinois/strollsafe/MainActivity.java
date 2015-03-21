@@ -3,7 +3,6 @@ package edu.illinois.strollsafe;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -24,12 +23,17 @@ import android.widget.TextView;
 
 import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.OhShitLock;
+import edu.illinois.strollsafe.util.timer.SimpleTimer;
+import edu.illinois.strollsafe.util.timer.TimedThread;
+import edu.illinois.strollsafe.util.timer.Timer;
 
 
 public class MainActivity extends Activity {
     public static final String PREFS_NAME = "StrollSafePrefs";
+
     private static short pauseNeedsMainSwitchCounter = -1;
     private static long lastShakeSend = 0;
+    private TimedThread releasedTimedThread;
 
     enum Mode {
         MAIN, RELEASE, SHAKE, THUMB
@@ -88,54 +92,59 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void openOhShitLock() {
+        final View mainView = findViewById(R.id.mainLayout);
+        if(mode == Mode.THUMB) {
+            mainView.post(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(new Intent(getApplicationContext(), LockedActivity.class));
+                    changeMode(Mode.MAIN);
+                }
+            });
+        }
+    }
+
     private void HandleThumbReleased() {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate(100);
 
         final View mainView = findViewById(R.id.mainLayout);
         final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
+        progressBar.setProgress(0);
         final TextView middleText = (TextView)findViewById(R.id.middleText);
-        new Thread(new Runnable() {
+        final long duration = 1500L; // 1.5 seconds
+        final Timer timer = new SimpleTimer(duration);
+        releasedTimedThread = new TimedThread(new Runnable() {
             @Override
             public void run() {
-                long durationNanos = 1500000000L; // two seconds
-                long startTime = System.nanoTime();
-                while(System.nanoTime() <= (startTime + durationNanos)) {
-                    if(mode != Mode.THUMB)
-                        return;
-
-                    final long elapsed = System.nanoTime() - startTime;
-                    final int percent = (int)(((double)elapsed / durationNanos) * 100);
-                    final double remaining = (double)elapsed / 1000000000L;
-                    mainView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressBar.setProgress(percent);
-                            middleText.setText(String.format("%.01f seconds remaining", 2d - remaining));
-                        }
-                    });
-                    try {
-                        Thread.sleep(20, 0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                if(mode != Mode.THUMB)
+                    Thread.currentThread().interrupt();
+                final int percent = (int)(((double)timer.getTimeElapsed() / duration) * 100);
+                final double remaining = timer.getTimeRemaining() / 1000d;
+                mainView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setProgress(percent);
+                        middleText.setText(String.format("%.01f seconds remaining", remaining));
                     }
-                }
-                if(mode == Mode.THUMB) {
-                    mainView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            startActivity(new Intent(getApplicationContext(), LockedActivity.class));
-                            changeMode(Mode.MAIN);
-                        }
-                    });
-                }
+                });
             }
-        }).start();
-        progressBar.setProgress(0);
+        }, timer, 20, new Runnable() {
+            @Override
+            public void run() {
+                openOhShitLock();
+            }
+        });
+        releasedTimedThread.start();
     }
 
     private void changeMode(Mode newMode) {
         mode = newMode;
+
+        if(releasedTimedThread != null)
+            releasedTimedThread.forciblyStop();
+
         TextView headerText = (TextView)findViewById(R.id.headerText);
         TextView subText = (TextView)findViewById(R.id.subText);
         Space space1 = (Space)findViewById(R.id.space1);

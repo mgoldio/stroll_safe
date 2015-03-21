@@ -9,22 +9,35 @@ package edu.illinois.strollsafe.util.timer;
 public class TimedThread {
 
     private final Thread thread;
+    private final Timer timer;
     private volatile boolean isRunning = false;
 
     /**
      * Creates a new Timed Thread
-     * @param runnable the runnable to execute over and over until the time has elapsed
-     * @param timer a Timer that holds the duration of the timed thread
+     *
+     * @param runnable   the runnable to execute over and over until the time has elapsed
+     * @param timer      a Timer that holds the duration of the timed thread
      * @param waitMillis the time the thread should wait between executing the runnable
      */
     public TimedThread(Runnable runnable, Timer timer, long waitMillis) {
-        thread = new Thread(createTimedRunnable(runnable, timer, waitMillis));
+        this.timer = timer;
+        thread = new Thread(createTimedRunnable(runnable, waitMillis, null));
+    }
+
+    public TimedThread(Runnable runnable, Timer timer, long waitMillis, Runnable finishedRunnable) {
+        this.timer = timer;
+        thread = new Thread(createTimedRunnable(runnable, waitMillis, finishedRunnable));
     }
 
     /**
      * Starts the timed thread
      */
     public void start() {
+        if (isRunning)
+            throw new IllegalThreadStateException("the thread has already been started");
+
+        timer.reset();
+        timer.start();
         thread.start();
         isRunning = true;
     }
@@ -51,17 +64,11 @@ public class TimedThread {
         return isRunning;
     }
 
-    private Runnable createTimedRunnable(final Runnable runnable, final Timer timer, final long waitMillis) {
+    private Runnable createTimedRunnable(final Runnable runnable, final long waitMillis, final Runnable finishedRunnable) {
         return new Runnable() {
             @Override
             public void run() {
-                timer.reset();
-                timer.start();
-                while(!timer.hasElapsed())
-                {
-                    if(!isRunning)
-                        return;
-
+                while (isRunning && timer.isRunning()) {
                     runnable.run();
                     try {
                         Thread.sleep(waitMillis);
@@ -70,6 +77,8 @@ public class TimedThread {
                     }
                 }
                 isRunning = false;
+                if (finishedRunnable != null)
+                    finishedRunnable.run();
             }
         };
     }

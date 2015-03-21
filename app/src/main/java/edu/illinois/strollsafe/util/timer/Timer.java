@@ -19,6 +19,8 @@ public interface Timer {
 
     long getTimeRemaining();
 
+    long getTimeElapsed();
+
     boolean isRunning();
 
     boolean hasElapsed();
