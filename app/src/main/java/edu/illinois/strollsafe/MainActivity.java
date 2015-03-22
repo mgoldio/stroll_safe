@@ -5,8 +5,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -72,6 +75,10 @@ public class MainActivity extends Activity {
         }
 
         MainListener listener = new MainListener(this);
+        TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        if (mgr != null) {
+            mgr.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
         findViewById(R.id.mainLayout).setOnTouchListener(listener);
         findViewById(R.id.mainButton).setOnTouchListener(listener);
         findViewById(R.id.closeButton).setOnLongClickListener(listener);
@@ -254,6 +261,9 @@ public class MainActivity extends Activity {
         if (OhShitLock.getInstance().isLocked())
             EmergencyContacter.sendEmergency(this);
         stopService(shakeServiceIntent);
+        AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setMode(AudioManager.MODE_NORMAL);
+        audioManager.setSpeakerphoneOn(false);
         super.onDestroy();
     }
 

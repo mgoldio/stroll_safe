@@ -1,6 +1,10 @@
 package edu.illinois.strollsafe;
 
+import android.content.Context;
 import android.graphics.Rect;
+import android.media.AudioManager;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
@@ -8,12 +12,27 @@ import android.widget.ImageButton;
 /**
  * @author Michael Goldstein
  */
-public class MainListener implements View.OnTouchListener, View.OnLongClickListener {
+public class MainListener extends PhoneStateListener implements View.OnTouchListener, View.OnLongClickListener {
 
     private MainActivity context;
 
     public MainListener(MainActivity context) {
         this.context = context;
+    }
+
+    @Override
+    public void onCallStateChanged(int state, String incomingNumber) {
+        super.onCallStateChanged(state, incomingNumber);
+        if((state  & 3) > 0) {
+            AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setMode(AudioManager.MODE_IN_CALL);
+            audioManager.setSpeakerphoneOn(true);
+        }
+        else {
+            AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setMode(AudioManager.MODE_NORMAL);
+            audioManager.setSpeakerphoneOn(false);
+        }
     }
 
     @Override
