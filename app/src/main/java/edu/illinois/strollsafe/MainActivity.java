@@ -3,16 +3,12 @@ package edu.illinois.strollsafe;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -21,23 +17,16 @@ import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
 
-import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.lock.OhShitLock;
+import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.timer.SimpleTimer;
 import edu.illinois.strollsafe.util.timer.TimedThread;
 import edu.illinois.strollsafe.util.timer.Timer;
 
 
 public class MainActivity extends Activity {
-    public static final String PREFS_NAME = "StrollSafePrefs";
-
     private static short pauseNeedsMainSwitchCounter = -1;
-    private static long lastShakeSend = 0;
     private TimedThread releasedTimedThread;
-
-    enum Mode {
-        MAIN, RELEASE, SHAKE, THUMB
-    }
 
     private static Mode mode = Mode.MAIN;
 
@@ -47,6 +36,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // debug
+        // String PREFS_NAME = "StrollSafePrefs";
         // SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         // SharedPreferences.Editor editor = settings.edit();
         //editor.remove("key");
@@ -61,7 +51,7 @@ public class MainActivity extends Activity {
         // DEBUG DO NOT UNCOMMENT
         // EmergencyContacter.makeEmergencyCall(this);
         
-        MyListener listener = new MyListener();
+        MainListener listener = new MainListener(this);
         SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
         findViewById(R.id.mainLayout).setOnTouchListener(listener);
@@ -92,6 +82,10 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    public Mode getMode() {
+        return mode;
+    }
+
     public void openOhShitLock() {
         final View mainView = findViewById(R.id.mainLayout);
         if(mode == Mode.THUMB) {
@@ -113,14 +107,15 @@ public class MainActivity extends Activity {
         final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
         progressBar.setProgress(0);
         final TextView middleText = (TextView)findViewById(R.id.middleText);
-        final long duration = 1500L; // 1.5 seconds
+        final long duration = 1000L; // 1.0 seconds
         final Timer timer = new SimpleTimer(duration);
         releasedTimedThread = new TimedThread(new Runnable() {
             @Override
             public void run() {
                 if(mode != Mode.THUMB)
                     Thread.currentThread().interrupt();
-                final int percent = (int)(((double)timer.getTimeElapsed() / timer.getDuration()) * 100);
+                final int percent = (int)(((double)timer.getTimeElapsed()
+                        / timer.getDuration()) * 100) + 1;
                 final double remaining = timer.getTimeRemaining() / 1000d;
                 mainView.post(new Runnable() {
                     @Override
@@ -139,7 +134,7 @@ public class MainActivity extends Activity {
         releasedTimedThread.start();
     }
 
-    private void changeMode(Mode newMode) {
+    public void changeMode(Mode newMode) {
         mode = newMode;
 
         if(releasedTimedThread != null)
@@ -214,87 +209,6 @@ public class MainActivity extends Activity {
                 space3.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 0f));
                 HandleThumbReleased();
                 break;
-        }
-    }
-
-    private class MyListener implements View.OnTouchListener, View.OnLongClickListener, SensorEventListener {
-        private long lastShakeUpdate = System.nanoTime();
-        private float[] prevVector = new float[3];
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            if(event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_DOWN)
-                return false;
-
-            Rect buttonBounds = new Rect();
-            findViewById(R.id.mainButton).getDrawingRect(buttonBounds);
-            boolean isWithinButtonBounds = buttonBounds.contains((int)event.getX(), (int)event.getY());
-            switch(mode) {
-                case MAIN:
-                    if(!(v instanceof ImageButton))
-                        return true;
-                    changeMode(Mode.RELEASE);
-                    break;
-
-                case RELEASE:
-                    if(isWithinButtonBounds)
-                    {
-                        changeMode(Mode.SHAKE);
-                        return true;
-                    }
-                    changeMode(Mode.THUMB);
-                    break;
-                case THUMB:
-                    if(!(v instanceof ImageButton) || !isWithinButtonBounds)
-                        return true;
-                    changeMode(Mode.RELEASE);
-                    break;
-                case SHAKE:
-                    if(!isWithinButtonBounds)
-                        return true;
-                    changeMode(Mode.RELEASE);
-                    break;
-            }
-            return true;
-        }
-
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            if(mode != Mode.SHAKE)
-                return;
-
-            long time = System.nanoTime();
-            if ((time - lastShakeUpdate) > 100000000) { // only check speed every 100ms
-                lastShakeUpdate = time;
-                float speed = (event.values[0] * event.values[0] + event.values[1] * event.values[1] + event.values[2] * event.values[2]);
-                float x = event.values[0] + prevVector[0];
-                float y = event.values[1] + prevVector[1];
-                float z = event.values[2] + prevVector[2];
-                prevVector[0] = event.values[0];
-                prevVector[1] = event.values[1];
-                prevVector[2] = event.values[2];
-                float deltaDir = (x * x + y * y + z * z);
-                if(deltaDir < 400 && speed > 550 && (System.currentTimeMillis() - lastShakeSend) > 5000)
-                {
-                    lastShakeSend = System.currentTimeMillis();
-                    startActivity(new Intent(getApplicationContext(), LockedActivity.class));
-                    changeMode(Mode.MAIN);
-                }
-            }
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // do nothing unless we decide we need to
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            if(v.getId() != R.id.closeButton)
-                return false;
-            // TODO kill service
-            finish();
-            return true;
         }
     }
 

@@ -46,7 +46,7 @@ public class LockedActivity extends PassKeyboard {
         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar2);
         final TextView timerText = (TextView) findViewById(R.id.timerText);
         progressBar.setIndeterminate(false);
-        progressBar.setMax(100);
+        progressBar.setMax(1000);
         progressBar.setProgress(0);
 
         timer.reset();
@@ -59,7 +59,8 @@ public class LockedActivity extends PassKeyboard {
         timedThread = new TimedThread(new Runnable() {
             @Override
             public void run() {
-                final int percent = (int) (((double) timer.getTimeElapsed() / timer.getDuration()) * 100);
+                final int percent = (int) (((double) timer.getTimeElapsed()
+                        / timer.getDuration()) * 1000) + 1;
                 final double remaining = timer.getTimeRemaining() / 1000d;
                 lockView.post(new Runnable() {
                     @Override
@@ -69,7 +70,7 @@ public class LockedActivity extends PassKeyboard {
                     }
                 });
             }
-        }, timer, 50L, new Runnable() {
+        }, timer, 20L, new Runnable() {
             @Override
             public void run() {
                 finish();
