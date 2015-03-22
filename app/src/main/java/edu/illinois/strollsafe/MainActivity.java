@@ -1,10 +1,10 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.Menu;
@@ -17,9 +17,11 @@ import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
 
-import edu.illinois.strollsafe.lock.LockBackgroundService;
+import java.io.IOException;
+
 import edu.illinois.strollsafe.lock.OhShitLock;
 import edu.illinois.strollsafe.util.EmergencyContacter;
+import edu.illinois.strollsafe.util.location.LocationService;
 import edu.illinois.strollsafe.util.timer.SimpleTimer;
 import edu.illinois.strollsafe.util.timer.TimedThread;
 import edu.illinois.strollsafe.util.timer.Timer;
@@ -33,7 +35,27 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.out.println("BITCH"); // TODO
+        try {
+            if (!LocationService.isCurrentLocationSupported(this)) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+                dialog.setTitle("Stroll Safe Not Supported");
+                dialog.setMessage("Stroll Safe is only supported on the University of Illinois " +
+                        "campus. We are going national soon, but please be patient! Sorry for t" +
+                        "he inconvenience.");
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+                dialog.create();
+                dialog.show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -44,7 +66,7 @@ public class MainActivity extends Activity {
         //editor.remove("key");
         //editor.commit();
 
-        if(!OhShitLock.getInstance().restorePass(this)) {
+        if (!OhShitLock.getInstance().restorePass(this)) {
             Intent intent = new Intent(this, SetLockActivity.class);
             startActivity(intent);
         }
@@ -87,7 +109,7 @@ public class MainActivity extends Activity {
 
     public void openOhShitLock() {
         final View mainView = findViewById(R.id.mainLayout);
-        if(mode == Mode.THUMB) {
+        if (mode == Mode.THUMB) {
             mainView.post(new Runnable() {
                 @Override
                 public void run() {
@@ -103,17 +125,17 @@ public class MainActivity extends Activity {
         v.vibrate(100);
 
         final View mainView = findViewById(R.id.mainLayout);
-        final ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setProgress(0);
-        final TextView middleText = (TextView)findViewById(R.id.middleText);
+        final TextView middleText = (TextView) findViewById(R.id.middleText);
         final long duration = 1000L; // 1.0 seconds
         final Timer timer = new SimpleTimer(duration);
         releasedTimedThread = new TimedThread(new Runnable() {
             @Override
             public void run() {
-                if(mode != Mode.THUMB)
+                if (mode != Mode.THUMB)
                     Thread.currentThread().interrupt();
-                final int percent = (int)(((double)timer.getTimeElapsed()
+                final int percent = (int) (((double) timer.getTimeElapsed()
                         / timer.getDuration()) * 100) + 1;
                 final double remaining = timer.getTimeRemaining() / 1000d;
                 mainView.post(new Runnable() {
@@ -136,22 +158,22 @@ public class MainActivity extends Activity {
     public void changeMode(Mode newMode) {
         mode = newMode;
 
-        if(releasedTimedThread != null)
+        if (releasedTimedThread != null)
             releasedTimedThread.forciblyStop();
 
-        TextView headerText = (TextView)findViewById(R.id.headerText);
-        TextView subText = (TextView)findViewById(R.id.subText);
-        Space space1 = (Space)findViewById(R.id.space1);
-        ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar);
-        ImageButton closeButton = (ImageButton)findViewById(R.id.closeButton);
-        TextView middleText = (TextView)findViewById(R.id.middleText);
-        Space space2 = (Space)findViewById(R.id.space2);
-        ImageButton mainButton = (ImageButton)findViewById(R.id.mainButton);
-        TextView bottomText = (TextView)findViewById(R.id.bottomText);
-        Space space3 = (Space)findViewById(R.id.space3);
+        TextView headerText = (TextView) findViewById(R.id.headerText);
+        TextView subText = (TextView) findViewById(R.id.subText);
+        Space space1 = (Space) findViewById(R.id.space1);
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        ImageButton closeButton = (ImageButton) findViewById(R.id.closeButton);
+        TextView middleText = (TextView) findViewById(R.id.middleText);
+        Space space2 = (Space) findViewById(R.id.space2);
+        ImageButton mainButton = (ImageButton) findViewById(R.id.mainButton);
+        TextView bottomText = (TextView) findViewById(R.id.bottomText);
+        Space space3 = (Space) findViewById(R.id.space3);
         int fingerId = getResources().getIdentifier("@drawable/finger_icon", null, getPackageName());
         int shakeId = getResources().getIdentifier("@drawable/shake_icon", null, getPackageName());
-        switch(mode) {
+        switch (mode) {
             case MAIN:
                 headerText.setText("Stroll Safe");
                 subText.setText("Keeping You Safe on Late Night Strolls");
@@ -213,7 +235,7 @@ public class MainActivity extends Activity {
 
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         // TODO start SHAKE SERVICE!!!
 
         changeMode(Mode.SHAKE);
@@ -221,7 +243,7 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         // TODO start SHAKE SERVICE!!
         changeMode(Mode.SHAKE);
         super.onPause();
@@ -229,7 +251,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if(OhShitLock.getInstance().isLocked())
+        if (OhShitLock.getInstance().isLocked())
             EmergencyContacter.sendEmergency(this);
         stopService(shakeServiceIntent);
         super.onDestroy();
