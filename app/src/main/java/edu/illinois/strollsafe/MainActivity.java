@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
 
+import edu.illinois.strollsafe.lock.LockBackgroundService;
 import edu.illinois.strollsafe.lock.OhShitLock;
 import edu.illinois.strollsafe.util.EmergencyContacter;
 import edu.illinois.strollsafe.util.timer.SimpleTimer;
@@ -25,12 +26,14 @@ import edu.illinois.strollsafe.util.timer.Timer;
 
 
 public class MainActivity extends Activity {
-    private TimedThread releasedTimedThread;
 
+    private TimedThread releasedTimedThread;
+    private Intent shakeServiceIntent;
     private static Mode mode = Mode.MAIN;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println("BITCH"); // TODO
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -46,15 +49,13 @@ public class MainActivity extends Activity {
             startActivity(intent);
         }
 
-        // DEBUG DO NOT UNCOMMENT
-        // EmergencyContacter.makeEmergencyCall(this);
-        
         MainListener listener = new MainListener(this);
-        SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        sensorManager.registerListener(listener, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
         findViewById(R.id.mainLayout).setOnTouchListener(listener);
         findViewById(R.id.mainButton).setOnTouchListener(listener);
         findViewById(R.id.closeButton).setOnLongClickListener(listener);
+
+        shakeServiceIntent = new Intent(this, ShakeBackgroundService.class);
+        startService(shakeServiceIntent);
     }
 
 
@@ -214,18 +215,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop(){
         // TODO start SHAKE SERVICE!!!
-        if(mode == Mode.RELEASE || mode == Mode.THUMB) {
-            changeMode(Mode.SHAKE);
-        }
+
+        changeMode(Mode.SHAKE);
         super.onStop();
     }
 
     @Override
     protected void onPause(){
         // TODO start SHAKE SERVICE!!
-        if(mode == Mode.RELEASE || mode == Mode.THUMB) {
-            changeMode(Mode.SHAKE);
-        }
+        changeMode(Mode.SHAKE);
         super.onPause();
     }
 
@@ -233,6 +231,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if(OhShitLock.getInstance().isLocked())
             EmergencyContacter.sendEmergency(this);
+        stopService(shakeServiceIntent);
         super.onDestroy();
     }
 
