@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setProgress(0);
         final TextView middleText = (TextView) findViewById(R.id.middleText);
-        final long duration = 1000L; // 1.0 seconds
+        final long duration = GlobalConfig.RELEASE_TIMER_DURATION; // 1.0 seconds
         final Timer timer = new SimpleTimer(duration);
         releasedTimedThread = new TimedThread(new Runnable() {
             @Override
@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
                     Thread.currentThread().interrupt();
                 final int percent = (int) (((double) timer.getTimeElapsed()
                         / timer.getDuration()) * 100) + 1;
-                final double remaining = timer.getTimeRemaining() / 1000d;
+                final double remaining = (double)timer.getTimeRemaining() / timer.getDuration();
                 mainView.post(new Runnable() {
                     @Override
                     public void run() {

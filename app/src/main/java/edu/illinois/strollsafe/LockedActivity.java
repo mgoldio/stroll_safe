@@ -23,7 +23,7 @@ import edu.illinois.strollsafe.util.timer.Timer;
 
 public class LockedActivity extends PassKeyboard {
 
-    private static final AcceleratableTimer timer = new AcceleratableTimer(20000);
+    private static final AcceleratableTimer timer = new AcceleratableTimer(GlobalConfig.LOCK_TIMER_DURATION);
     private TimedThread timedThread;
     private Intent serviceIntent;
 
