@@ -25,7 +25,6 @@ import edu.illinois.strollsafe.util.timer.Timer;
 
 
 public class MainActivity extends Activity {
-    private static short pauseNeedsMainSwitchCounter = -1;
     private TimedThread releasedTimedThread;
 
     private static Mode mode = Mode.MAIN;
@@ -43,7 +42,6 @@ public class MainActivity extends Activity {
         //editor.commit();
 
         if(!OhShitLock.getInstance().restorePass(this)) {
-            pauseNeedsMainSwitchCounter = 0;
             Intent intent = new Intent(this, SetLockActivity.class);
             startActivity(intent);
         }
@@ -215,44 +213,26 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop(){
-        // TODO clean this shit up
-        if(pauseNeedsMainSwitchCounter >= 0)
-        {
-            changeMode(Mode.MAIN);
-            pauseNeedsMainSwitchCounter++;
-        }
-        else {
+        // TODO start SHAKE SERVICE!!!
+        if(mode == Mode.RELEASE || mode == Mode.THUMB) {
             changeMode(Mode.SHAKE);
         }
-
-        if(pauseNeedsMainSwitchCounter >= 2)
-            pauseNeedsMainSwitchCounter = -1;
-
         super.onStop();
     }
 
     @Override
     protected void onPause(){
-        // TODO clean this shit up
-        if(pauseNeedsMainSwitchCounter >= 0)
-        {
-            changeMode(Mode.MAIN);
-            pauseNeedsMainSwitchCounter++;
-        }
-        else {
+        // TODO start SHAKE SERVICE!!
+        if(mode == Mode.RELEASE || mode == Mode.THUMB) {
             changeMode(Mode.SHAKE);
         }
-
-        if(pauseNeedsMainSwitchCounter >= 2)
-            pauseNeedsMainSwitchCounter = -1;
-
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
         if(OhShitLock.getInstance().isLocked())
-            EmergencyContacter.makeEmergencyCall(this);
+            EmergencyContacter.sendEmergency(this);
         super.onDestroy();
     }
 

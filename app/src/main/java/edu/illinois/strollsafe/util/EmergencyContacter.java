@@ -2,7 +2,6 @@ package edu.illinois.strollsafe.util;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.net.Uri;
 
 public class EmergencyContacter {
@@ -18,8 +17,6 @@ public class EmergencyContacter {
         Intent callIntent = new Intent(Intent.ACTION_CALL);
         callIntent.setData(Uri.parse(EMERGENCY_NUMBER));
         context.startActivity(callIntent);
-        AudioManager audioManager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setMode(AudioManager.MODE_IN_CALL);
-        audioManager.setSpeakerphoneOn(true);
+        // TODO: set speakerphone on
     }
 }

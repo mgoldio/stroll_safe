@@ -3,13 +3,17 @@ package edu.illinois.strollsafe.lock;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
- * Created by noah on 2/28/15.
+ * @author Noah Prince
  */
 public class OhShitLock {
     private String key;
     private static OhShitLock instance;
     private boolean isLocked = false;
+    private static final String SALT = "tA1";
     public static final String PREFS_NAME = "StrollSafePrefs";
 
     protected OhShitLock(){
@@ -33,7 +37,7 @@ public class OhShitLock {
     }
 
     public boolean checkPass(String pass){
-        return pass.equals(key);
+        return new String(hash(pass)).equals(key);
     }
 
     public boolean restorePass(Context context){
@@ -46,7 +50,7 @@ public class OhShitLock {
     }
 
     public void setPass(Context context, String pass){
-        key = pass;
+        key = new String(hash(pass));
         // We need an Editor object to make preference changes.
         // All objects are from android.context.Context
         SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
@@ -55,5 +59,17 @@ public class OhShitLock {
 
         // Commit the edits!
         editor.commit();
+    }
+
+    private byte[] hash(String pin) {
+        try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = (pin + SALT).getBytes();
+            return sha256.digest(bytes);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }
