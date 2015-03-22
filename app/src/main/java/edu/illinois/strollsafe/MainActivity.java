@@ -1,17 +1,13 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -20,11 +16,8 @@ import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
 
-import java.io.IOException;
-
 import edu.illinois.strollsafe.lock.OhShitLock;
 import edu.illinois.strollsafe.util.EmergencyContacter;
-import edu.illinois.strollsafe.util.location.LocationService;
 import edu.illinois.strollsafe.util.timer.SimpleTimer;
 import edu.illinois.strollsafe.util.timer.TimedThread;
 import edu.illinois.strollsafe.util.timer.Timer;
@@ -38,27 +31,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        try {
-            if (!LocationService.isCurrentLocationSupported(this)) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-                dialog.setTitle("Stroll Safe Not Supported");
-                dialog.setMessage("Stroll Safe is only supported on the University of Illinois " +
-                        "campus. We are going national soon, but please be patient! Sorry for t" +
-                        "he inconvenience.");
-                dialog.setCancelable(false);
-                dialog.setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                });
-                dialog.create();
-                dialog.show();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -87,28 +59,6 @@ public class MainActivity extends Activity {
         startService(shakeServiceIntent);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     public Mode getMode() {
         return mode;
@@ -261,7 +211,7 @@ public class MainActivity extends Activity {
         if (OhShitLock.getInstance().isLocked())
             EmergencyContacter.sendEmergency(this);
         stopService(shakeServiceIntent);
-        AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         audioManager.setMode(AudioManager.MODE_NORMAL);
         audioManager.setSpeakerphoneOn(false);
         super.onDestroy();

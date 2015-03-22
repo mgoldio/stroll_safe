@@ -50,11 +50,7 @@ public class LockedActivity extends PassKeyboard {
         progressBar.setProgress(0);
 
         timer.reset();
-        try {
-            serviceIntent = new Intent(this, Class.forName(LockBackgroundService.class.getName()));
-        } catch (ClassNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+        serviceIntent = new Intent(this, LockBackgroundService.class);
         startService(serviceIntent);
         timedThread = new TimedThread(new Runnable() {
             @Override

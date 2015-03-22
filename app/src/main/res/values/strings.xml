@@ -1,11 +1,8 @@
 <resources>
-    <string name="app_name">"StrollSafe "</string>
+    <string name="app_name">"Stroll Safe"</string>
 
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">Stroll Safe</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_release_mode">ReleaseModeActivity</string>
     <string name="title_activity_thumb_released">ThumbReleasedActivity</string>
@@ -15,4 +12,5 @@
     <string name="wrong_passcode">Wrong passcode, please try again.</string>
 
     <string name="title_activity_set_lock">SetLockActivity</string>
+    <string name="title_activity_license">LicenseActivity</string>
 </resources>
