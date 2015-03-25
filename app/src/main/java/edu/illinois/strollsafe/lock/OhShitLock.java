@@ -1,10 +1,11 @@
 package edu.illinois.strollsafe.lock;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import edu.illinois.strollsafe.util.AppStorage;
 
 /**
  * @author Noah Prince
@@ -14,7 +15,6 @@ public class OhShitLock {
     private static OhShitLock instance;
     private boolean isLocked = false;
     private static final String SALT = "tA1";
-    public static final String PREFS_NAME = "StrollSafePrefs";
 
     protected OhShitLock(){
     }
@@ -42,9 +42,7 @@ public class OhShitLock {
 
     public boolean restorePass(Context context){
         // Restore preferences
-        SharedPreferences settings2 = context.getSharedPreferences(PREFS_NAME, 0);
-        key = settings2.getString("key",null);
-
+        key = AppStorage.getInstance().retrieveSetting(context, "pin");
         // There was no stored password
        return key != null;
     }
@@ -53,12 +51,7 @@ public class OhShitLock {
         key = new String(hash(pass));
         // We need an Editor object to make preference changes.
         // All objects are from android.context.Context
-        SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("key", key);
-
-        // Commit the edits!
-        editor.commit();
+        AppStorage.getInstance().storeSetting(context, "pin", key);
     }
 
     private byte[] hash(String pin) {

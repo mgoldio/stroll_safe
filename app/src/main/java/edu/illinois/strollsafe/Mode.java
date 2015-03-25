@@ -5,6 +5,6 @@ package edu.illinois.strollsafe;
  */
 public enum Mode {
 
-    MAIN, RELEASE, SHAKE, THUMB
+    MAIN, RELEASE, SHAKE, THUMB, LICENSE
 
 }

@@ -12,10 +12,10 @@ import android.widget.CompoundButton;
  */
 public class LicenseListener implements CompoundButton.OnCheckedChangeListener, View.OnTouchListener {
 
-    private Activity context;
+    private MainActivity context;
     private Button button;
 
-    public LicenseListener(Activity context) {
+    public LicenseListener(MainActivity context) {
         this.context = context;
         this.button = (Button) context.findViewById(R.id.licenseButton);
     }
@@ -30,8 +30,7 @@ public class LicenseListener implements CompoundButton.OnCheckedChangeListener, 
         if(event.getAction() != MotionEvent.ACTION_DOWN)
             return false;
 
-        context.finish();
-        context.startActivity(new Intent(context.getApplicationContext(), MainActivity.class));
+        context.changeToMainActivity();
         return true;
     }
 

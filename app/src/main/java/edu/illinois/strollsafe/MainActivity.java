@@ -1,7 +1,9 @@
 package edu.illinois.strollsafe;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -10,14 +12,19 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Space;
 import android.widget.TextView;
 
+import java.io.IOException;
+
 import edu.illinois.strollsafe.lock.OhShitLock;
+import edu.illinois.strollsafe.util.AppStorage;
 import edu.illinois.strollsafe.util.EmergencyContacter;
+import edu.illinois.strollsafe.util.location.LocationService;
 import edu.illinois.strollsafe.util.timer.SimpleTimer;
 import edu.illinois.strollsafe.util.timer.TimedThread;
 import edu.illinois.strollsafe.util.timer.Timer;
@@ -27,25 +34,47 @@ public class MainActivity extends Activity {
 
     private TimedThread releasedTimedThread;
     private Intent shakeServiceIntent;
-    private static Mode mode = Mode.MAIN;
+    private static Mode mode = Mode.LICENSE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        // debug
-        // String PREFS_NAME = "StrollSafePrefs";
-        // SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        // SharedPreferences.Editor editor = settings.edit();
-        //editor.remove("key");
-        //editor.commit();
-
-        if (!OhShitLock.getInstance().restorePass(this)) {
-            Intent intent = new Intent(this, SetLockActivity.class);
-            startActivity(intent);
+        try {
+            if (!LocationService.isCurrentLocationSupported(this)) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+                dialog.setTitle("Stroll Safe Not Supported");
+                dialog.setMessage("Stroll Safe is only supported on the University of Illinois " +
+                        "campus. We are going national soon, but please be patient! Sorry for t" +
+                        "he inconvenience.");
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+                dialog.create();
+                dialog.show();
+            } else {
+                if(AppStorage.getInstance().retrieveSetting(this, "terms") == null) {
+                    AppStorage.getInstance().storeSetting(this, "terms", "1");
+                    setContentView(R.layout.activity_license);
+                    LicenseListener listener = new LicenseListener(this);
+                    findViewById(R.id.licenseButton).setOnTouchListener(listener);
+                    ((CheckBox) findViewById(R.id.licnseCheckBox)).setOnCheckedChangeListener(listener);
+                } else {
+                    changeToMainActivity();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
+    public void changeToMainActivity() {
+        setContentView(R.layout.activity_main);
+        mode = Mode.MAIN;
         MainListener listener = new MainListener(this);
         TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         if (mgr != null) {
@@ -55,10 +84,14 @@ public class MainActivity extends Activity {
         findViewById(R.id.mainButton).setOnTouchListener(listener);
         findViewById(R.id.closeButton).setOnLongClickListener(listener);
 
+        if (!OhShitLock.getInstance().restorePass(this)) {
+            Intent intent = new Intent(this, SetLockActivity.class);
+            startActivity(intent);
+        }
+
         shakeServiceIntent = new Intent(this, ShakeBackgroundService.class);
         startService(shakeServiceIntent);
     }
-
 
     public Mode getMode() {
         return mode;
@@ -113,6 +146,9 @@ public class MainActivity extends Activity {
     }
 
     public void changeMode(Mode newMode) {
+        if(mode == Mode.LICENSE)
+            return;
+
         mode = newMode;
 
         if (releasedTimedThread != null)
