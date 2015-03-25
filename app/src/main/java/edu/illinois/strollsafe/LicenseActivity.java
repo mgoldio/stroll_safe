@@ -31,8 +31,7 @@ public class LicenseActivity extends Activity {
                 });
                 dialog.create();
                 dialog.show();
-            }
-            else{
+            } else {
                 setContentView(R.layout.activity_license);
                 LicenseListener listener = new LicenseListener(this);
                 findViewById(R.id.licenseButton).setOnTouchListener(listener);
