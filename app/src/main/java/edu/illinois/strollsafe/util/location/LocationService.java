@@ -1,5 +1,6 @@
 package edu.illinois.strollsafe.util.location;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.location.Geocoder;
 import android.location.Location;
@@ -45,11 +46,13 @@ public class LocationService {
     public static void testLocationSupported(final MainActivity context) throws IOException {
         String zip = getZipFromLocation(context, getLocationFast(context));
         if (zip == null || !isLocationSupported(zip)) {
+            final ProgressDialog progDialog = ProgressDialog.show(context, "Retrieving Location", "We are getting your location, please wait...", true);
             LocationManager locManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
             locManager.requestSingleUpdate(locManager.getBestProvider(GeneralSingletons.LOOSE_CRITERIA, false), new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
                     try {
+                        progDialog.dismiss();
                         if (!isLocationSupported(getZipFromLocation(context, location))) {
                             context.showUnsupportedLocationDialog();
                         }
