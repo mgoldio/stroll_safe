@@ -35,10 +35,12 @@ public class MainActivity extends Activity {
     private TimedThread releasedTimedThread;
     private Intent shakeServiceIntent;
     private static Mode mode = Mode.LICENSE;
+    private static MainActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
 
         try {
             LocationService.testLocationSupported(this);
@@ -46,7 +48,6 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
         if (AppStorage.getInstance().retrieveSetting(this, "terms") == null) {
-            AppStorage.getInstance().storeSetting(this, "terms", "1");
             setContentView(R.layout.activity_license);
             LicenseListener listener = new LicenseListener(this);
             findViewById(R.id.licenseButton).setOnTouchListener(listener);
@@ -54,6 +55,10 @@ public class MainActivity extends Activity {
         } else {
             changeToMainActivity();
         }
+    }
+
+    public static MainActivity getInstance() {
+        return instance;
     }
 
     public void showUnsupportedLocationDialog() {
@@ -95,7 +100,7 @@ public class MainActivity extends Activity {
         startService(shakeServiceIntent);
     }
 
-    public Mode getMode() {
+    public static Mode getMode() {
         return mode;
     }
 
@@ -231,17 +236,16 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
-        // TODO start SHAKE SERVICE!!!
-
-        changeMode(Mode.SHAKE);
         super.onStop();
+        if (mode != Mode.MAIN)
+            changeMode(Mode.SHAKE);
     }
 
     @Override
     protected void onPause() {
-        // TODO start SHAKE SERVICE!!
-        changeMode(Mode.SHAKE);
         super.onPause();
+        if (mode != Mode.MAIN)
+            changeMode(Mode.SHAKE);
     }
 
     @Override

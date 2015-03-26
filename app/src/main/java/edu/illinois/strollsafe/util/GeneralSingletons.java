@@ -2,6 +2,8 @@ package edu.illinois.strollsafe.util;
 
 import android.location.Criteria;
 
+import edu.illinois.strollsafe.Mode;
+
 /**
  * @author MichaelGoldstein
  */

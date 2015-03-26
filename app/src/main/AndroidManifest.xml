@@ -19,19 +19,23 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="portrait">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".LockedActivity"
             android:label="@string/title_activity_locked"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".SetLockActivity"
-            android:label="@string/title_activity_set_lock"/>
+            android:label="@string/title_activity_set_lock" />
+
+        <service
+            android:name=".ShakeBackgroundService"
+            android:enabled="true" />
 
     </application>
 
