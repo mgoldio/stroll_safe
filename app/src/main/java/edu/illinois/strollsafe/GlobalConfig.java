@@ -5,7 +5,7 @@ package edu.illinois.strollsafe;
  */
 public class GlobalConfig {
 
-    public static final String[] SUPPORTED_ZIP_CODES = {"61820", "61801", "61821", "62401"}; // TODO remove effingham
+    public static final String[] SUPPORTED_ZIP_CODES = {"61820", "61801", "61821"}; // TODO remove effingham
     public static final String EMERGENCY_NUMBER = "tel:13017515134";
     public static final long RELEASE_TIMER_DURATION = 1000L;
     public static final long LOCK_TIMER_DURATION = 20000L;

@@ -41,35 +41,37 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         try {
-            if (!LocationService.isCurrentLocationSupported(this)) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-                dialog.setTitle("Stroll Safe Not Supported");
-                dialog.setMessage("Stroll Safe is only supported on the University of Illinois " +
-                        "campus. We are going national soon, but please be patient! Sorry for t" +
-                        "he inconvenience.");
-                dialog.setCancelable(false);
-                dialog.setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                });
-                dialog.create();
-                dialog.show();
-            } else {
-                if(AppStorage.getInstance().retrieveSetting(this, "terms") == null) {
-                    AppStorage.getInstance().storeSetting(this, "terms", "1");
-                    setContentView(R.layout.activity_license);
-                    LicenseListener listener = new LicenseListener(this);
-                    findViewById(R.id.licenseButton).setOnTouchListener(listener);
-                    ((CheckBox) findViewById(R.id.licnseCheckBox)).setOnCheckedChangeListener(listener);
-                } else {
-                    changeToMainActivity();
-                }
-            }
+            LocationService.testLocationSupported(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (AppStorage.getInstance().retrieveSetting(this, "terms") == null) {
+            AppStorage.getInstance().storeSetting(this, "terms", "1");
+            setContentView(R.layout.activity_license);
+            LicenseListener listener = new LicenseListener(this);
+            findViewById(R.id.licenseButton).setOnTouchListener(listener);
+            ((CheckBox) findViewById(R.id.licnseCheckBox)).setOnCheckedChangeListener(listener);
+        } else {
+            changeToMainActivity();
+        }
+    }
+
+    public void showUnsupportedLocationDialog() {
+        finishActivity(1010);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Stroll Safe Not Supported");
+        dialog.setMessage("Stroll Safe is only supported on the University of Illinois " +
+                "campus. We are going national soon, but please be patient! Sorry for t" +
+                "he inconvenience.");
+        dialog.setCancelable(false);
+        dialog.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        dialog.create();
+        dialog.show();
     }
 
     public void changeToMainActivity() {
@@ -86,7 +88,7 @@ public class MainActivity extends Activity {
 
         if (!OhShitLock.getInstance().restorePass(this)) {
             Intent intent = new Intent(this, SetLockActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, 1010);
         }
 
         shakeServiceIntent = new Intent(this, ShakeBackgroundService.class);
@@ -127,7 +129,7 @@ public class MainActivity extends Activity {
                     Thread.currentThread().interrupt();
                 final int percent = (int) (((double) timer.getTimeElapsed()
                         / timer.getDuration()) * 100) + 1;
-                final double remaining = (double)timer.getTimeRemaining() / timer.getDuration();
+                final double remaining = (double) timer.getTimeRemaining() / timer.getDuration();
                 mainView.post(new Runnable() {
                     @Override
                     public void run() {
@@ -146,7 +148,7 @@ public class MainActivity extends Activity {
     }
 
     public void changeMode(Mode newMode) {
-        if(mode == Mode.LICENSE)
+        if (mode == Mode.LICENSE)
             return;
 
         mode = newMode;
@@ -246,7 +248,8 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if (OhShitLock.getInstance().isLocked())
             EmergencyContacter.sendEmergency(this);
-        stopService(shakeServiceIntent);
+        if (shakeServiceIntent != null)
+            stopService(shakeServiceIntent);
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         audioManager.setMode(AudioManager.MODE_NORMAL);
         audioManager.setSpeakerphoneOn(false);
